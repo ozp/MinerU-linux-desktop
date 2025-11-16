@@ -74,3 +74,83 @@ class MineruClient:
             "enable_table": self.enable_table,
             "language": self.language
         }
+
+    def upload_batch(self, file_paths):
+        """
+        Upload a batch of files to MinerU API for processing.
+
+        This follows a two-step process:
+        1. POST request to get batch_id and presigned URLs
+        2. PUT requests to upload actual file data to the presigned URLs
+
+        Args:
+            file_paths (list): List of local file paths to upload
+
+        Returns:
+            dict: Response containing batch_id and upload status
+
+        Raises:
+            ValueError: If API token is not configured
+            requests.RequestException: If API request fails
+        """
+        if not file_paths:
+            raise ValueError("No files provided for upload")
+
+        # Step 1: Request batch upload URLs
+        api_url = "https://mineru.net/api/v4/file-urls/batch"
+
+        # Prepare file list
+        files_list = [{"name": os.path.basename(fp)} for fp in file_paths]
+
+        # Prepare request body with files and processing options
+        request_body = {
+            "files": files_list,
+            **self.get_processing_options()
+        }
+
+        # Make POST request to get batch_id and upload URLs
+        headers = self.get_headers()
+        headers["Content-Type"] = "application/json"
+
+        response = requests.post(api_url, json=request_body, headers=headers)
+        response.raise_for_status()
+
+        response_data = response.json()
+        batch_id = response_data.get("batch_id")
+        file_urls = response_data.get("file_urls", [])
+
+        if not batch_id or not file_urls:
+            raise ValueError("Invalid response from API: missing batch_id or file_urls")
+
+        if len(file_urls) != len(file_paths):
+            raise ValueError(f"URL count mismatch: got {len(file_urls)}, expected {len(file_paths)}")
+
+        # Step 2: Upload each file to its presigned URL
+        upload_results = []
+        for i, (file_path, url_info) in enumerate(zip(file_paths, file_urls)):
+            try:
+                upload_url = url_info.get("url")
+                if not upload_url:
+                    raise ValueError(f"No upload URL for file: {file_path}")
+
+                # Upload file data
+                with open(file_path, 'rb') as f:
+                    put_response = requests.put(upload_url, data=f)
+                    put_response.raise_for_status()
+
+                upload_results.append({
+                    "file": os.path.basename(file_path),
+                    "status": "success"
+                })
+
+            except Exception as e:
+                upload_results.append({
+                    "file": os.path.basename(file_path),
+                    "status": "failed",
+                    "error": str(e)
+                })
+
+        return {
+            "batch_id": batch_id,
+            "uploads": upload_results
+        }
