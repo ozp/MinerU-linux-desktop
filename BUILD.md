@@ -45,8 +45,27 @@ Para mais detalhes sobre as dependências do sistema, consulte [SYSTEM_DEPENDENC
 - pip
 - PyInstaller
 - appimagetool
+- cffi (dependência do cryptography)
 
 ### Passos para Build
+
+#### Opção 1: Build Automatizado (Recomendado)
+
+Use o script de build automatizado:
+
+```bash
+git clone https://github.com/ozp/MinerU-linux-desktop.git
+cd MinerU-linux-desktop
+./build_appimage.sh
+```
+
+Este script irá:
+1. Instalar todas as dependências necessárias
+2. Construir o executável com PyInstaller
+3. Criar a estrutura AppImage
+4. Gerar o AppImage final
+
+#### Opção 2: Build Manual
 
 #### 1. Clone o repositório e instale dependências
 
@@ -54,23 +73,22 @@ Para mais detalhes sobre as dependências do sistema, consulte [SYSTEM_DEPENDENC
 git clone https://github.com/ozp/MinerU-linux-desktop.git
 cd MinerU-linux-desktop
 pip install -r requirements.txt
-pip install pyinstaller
+pip install pyinstaller cffi
 ```
 
-#### 2. Build com PyInstaller
+#### 2. Build com PyInstaller usando o arquivo .spec
 
 ```bash
-pyinstaller --onefile --windowed --name MinerU \
-  --add-data "config.ini.example:." \
-  --add-data "mineru_icon.svg:." \
-  --hidden-import keyring.backends.SecretService \
-  --hidden-import keyring.backends.kwallet \
-  main.py
+pyinstaller --clean MinerU.spec
 ```
 
-Isso criará o executável em `dist/MinerU`.
+Isso criará o executável em `dist/MinerU`. O arquivo `MinerU.spec` contém todas as configurações necessárias, incluindo:
+- Importações ocultas do PySide6
+- Backends do keyring para armazenamento seguro
+- Configuração adequada do cryptography
+- Dados e recursos do aplicativo
 
-#### 3. (Opcional) Criar AppImage
+#### 3. Criar AppImage
 
 ```bash
 # Crie a estrutura AppDir
@@ -160,10 +178,12 @@ Se você receber erros sobre módulos não encontrados, adicione-os como hidden 
 
 ### Executável muito grande
 
-O tamanho do executável (10 MB) é normal e inclui:
+O tamanho do executável (~67 MB) é normal e inclui:
 - Python runtime
-- PySide6 (Qt)
-- Todas as dependências Python
+- PySide6 (Qt) e todas suas bibliotecas
+- Keyring e backends para armazenamento seguro
+- Cryptography e suas dependências
+- Requests e outras bibliotecas
 - Recursos do aplicativo
 
 **Nota**: As bibliotecas Qt do sistema NÃO estão incluídas e devem ser instaladas separadamente.
