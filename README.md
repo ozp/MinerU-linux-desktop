@@ -23,7 +23,7 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 
 **Quer começar rapidamente?** Baixe o AppImage pronto para uso:
 
-### 📥 [Download MinerU-x86_64.AppImage](MinerU-x86_64.AppImage) (10 MB)
+### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/releases/latest/download/MinerU-x86_64.AppImage) (67 MB)
 
 **Como usar:**
 
