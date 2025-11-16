@@ -38,3 +38,16 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# PyInstaller build files
+*.spec
+build/
+dist/
+
+# AppImage build artifacts
+*.AppDir/
+squashfs-root/
+appimagetool-x86_64.AppImage
+
+# Keep the final AppImage
+!MinerU-x86_64.AppImage

@@ -19,6 +19,25 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 - ✅ Tratamento robusto de erros
 - ✅ Interface em Português
 
+## Download Rápido (AppImage)
+
+**Quer começar rapidamente?** Baixe o AppImage pronto para uso:
+
+### 📥 [Download MinerU-x86_64.AppImage](MinerU-x86_64.AppImage) (10 MB)
+
+**Como usar:**
+
+```bash
+# 1. Baixe o arquivo MinerU-x86_64.AppImage
+# 2. Torne-o executável
+chmod +x MinerU-x86_64.AppImage
+
+# 3. Execute
+./MinerU-x86_64.AppImage
+```
+
+O AppImage é um executável portátil que funciona em **qualquer distribuição Linux** sem instalação de dependências. Basta baixar e executar!
+
 ## Requisitos
 
 - Python 3.8 ou superior

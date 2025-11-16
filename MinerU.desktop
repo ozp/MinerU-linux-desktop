@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=MinerU Desktop Client
+Comment=Cliente desktop para a API do MinerU
+Exec=main
+Icon=mineru_icon
+Type=Application
+Categories=Office;Utility;
+Terminal=false
+StartupNotify=true
