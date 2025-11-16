@@ -28,15 +28,18 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 **Como usar:**
 
 ```bash
-# 1. Baixe o arquivo MinerU-x86_64.AppImage
-# 2. Torne-o executável
+# 1. Instale as bibliotecas Qt do sistema (apenas uma vez)
+./install_system_deps.sh
+
+# 2. Baixe o arquivo MinerU-x86_64.AppImage
+# 3. Torne-o executável
 chmod +x MinerU-x86_64.AppImage
 
-# 3. Execute
+# 4. Execute
 ./MinerU-x86_64.AppImage
 ```
 
-O AppImage é um executável portátil que funciona em **qualquer distribuição Linux** sem instalação de dependências. Basta baixar e executar!
+O AppImage é um executável portátil que funciona em **qualquer distribuição Linux**. Inclui Python e todas as dependências Python, mas requer bibliotecas Qt do sistema (instaladas pelo script acima).
 
 ## Requisitos
 
