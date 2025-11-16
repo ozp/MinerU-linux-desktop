@@ -147,8 +147,11 @@ class MineruClient:
                 raise Exception(f"API request failed with status {response.status_code}: {e}")
 
         response_data = response.json()
-        batch_id = response_data.get("batch_id")
-        file_urls = response_data.get("file_urls", [])
+
+        # Extract data from response structure
+        data = response_data.get("data", {})
+        batch_id = data.get("batch_id")
+        file_urls = data.get("file_urls", [])
 
         if not batch_id or not file_urls:
             raise ValueError("Invalid response from API: missing batch_id or file_urls")
@@ -161,10 +164,9 @@ class MineruClient:
         total_files = len(file_paths)
         completed_count = 0
 
-        def upload_single_file(file_path: str, url_info: Dict) -> Dict:
+        def upload_single_file(file_path: str, upload_url: str) -> Dict:
             """Upload a single file to its presigned URL."""
             try:
-                upload_url = url_info.get("url")
                 if not upload_url:
                     raise ValueError(f"No upload URL for file: {file_path}")
 
@@ -188,8 +190,8 @@ class MineruClient:
         # Use ThreadPoolExecutor for parallel uploads (max 5 concurrent uploads)
         with ThreadPoolExecutor(max_workers=5) as executor:
             future_to_file = {
-                executor.submit(upload_single_file, file_path, url_info): file_path
-                for file_path, url_info in zip(file_paths, file_urls)
+                executor.submit(upload_single_file, file_path, upload_url): file_path
+                for file_path, upload_url in zip(file_paths, file_urls)
             }
 
             for future in as_completed(future_to_file):

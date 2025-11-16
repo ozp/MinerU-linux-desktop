@@ -309,13 +309,16 @@ class MainWindow(QMainWindow):
 
         try:
             status_data = self.mineru_client.get_batch_status(self.current_batch_id)
-            files_info = status_data.get("files", [])
+
+            # Extract data from response structure
+            data = status_data.get("data", {})
+            files_info = data.get("extract_result", [])
 
             all_done = True
             has_completed = False
 
             for file_info in files_info:
-                filename = file_info.get("name")
+                filename = file_info.get("file_name")
                 state = file_info.get("state")
 
                 if state == "done":
