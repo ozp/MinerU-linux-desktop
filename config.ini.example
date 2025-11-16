@@ -1,0 +1,8 @@
+[Settings]
+is_ocr = True
+enable_formula = False
+enable_table = True
+language = pt
+
+[Paths]
+output_directory = ~/Documentos/MinerU_Output
