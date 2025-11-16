@@ -8,18 +8,34 @@ Se você quer apenas usar o aplicativo, baixe o AppImage pronto:
 
 **[Download MinerU-x86_64.AppImage](MinerU-x86_64.AppImage)** (10 MB)
 
+### Requisitos do Sistema
+
+Antes de executar o AppImage, instale as bibliotecas Qt necessárias:
+
+```bash
+# Opção 1: Script automático
+./install_system_deps.sh
+
+# Opção 2: Instalação manual
+apt-get install -y libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 \
+    libxcb-shape0 libxcb-xkb1 libxkbcommon-x11-0 libegl1
+```
+
+**Nota**: O AppImage inclui o Python runtime e todas as dependências Python (PySide6, requests, keyring), mas ainda requer bibliotecas Qt do sistema para funcionar corretamente.
+
 ### Como usar o AppImage:
 
 ```bash
-# 1. Baixe o arquivo
-# 2. Torne-o executável
+# 1. Instale as dependências do sistema (veja acima)
+# 2. Baixe o arquivo
+# 3. Torne-o executável
 chmod +x MinerU-x86_64.AppImage
 
-# 3. Execute
+# 4. Execute
 ./MinerU-x86_64.AppImage
 ```
 
-O AppImage é um executável portátil que funciona em qualquer distribuição Linux sem instalação.
+Para mais detalhes sobre as dependências do sistema, consulte [SYSTEM_DEPENDENCIES.md](SYSTEM_DEPENDENCIES.md).
 
 ## Construir do Código Fonte
 
@@ -129,6 +145,23 @@ MinerU-linux-desktop/
 
 ## Solução de Problemas
 
+### Erro: "Could not load the Qt platform plugin 'xcb'"
+
+Este erro ocorre quando as bibliotecas Qt do sistema estão faltando. Instale-as:
+
+```bash
+./install_system_deps.sh
+```
+
+Ou manualmente:
+
+```bash
+apt-get install -y libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 \
+    libxcb-shape0 libxcb-xkb1 libxkbcommon-x11-0 libegl1
+```
+
+Para mais informações, consulte [SYSTEM_DEPENDENCIES.md](SYSTEM_DEPENDENCIES.md).
+
 ### PyInstaller não encontra módulos
 
 Se você receber erros sobre módulos não encontrados, adicione-os como hidden imports:
@@ -139,8 +172,9 @@ Se você receber erros sobre módulos não encontrados, adicione-os como hidden 
 
 ### AppImage não executa
 
+- **Primeiro**, verifique se as bibliotecas Qt estão instaladas (veja acima)
 - Verifique se tem permissão de execução: `chmod +x MinerU-x86_64.AppImage`
-- Em alguns sistemas, pode ser necessário FUSE: `sudo apt install fuse`
+- Em alguns sistemas, pode ser necessário FUSE: `apt install fuse`
 
 ### Executável muito grande
 
@@ -151,6 +185,8 @@ O tamanho do executável (~67 MB) é normal e inclui:
 - Cryptography e suas dependências
 - Requests e outras bibliotecas
 - Recursos do aplicativo
+
+**Nota**: As bibliotecas Qt do sistema NÃO estão incluídas e devem ser instaladas separadamente.
 
 ## Informações de Versão
 

@@ -28,21 +28,42 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 **Como usar:**
 
 ```bash
-# 1. Baixe o arquivo MinerU-x86_64.AppImage
-# 2. Torne-o executável
+# 1. Instale as bibliotecas Qt do sistema (apenas uma vez)
+./install_system_deps.sh
+
+# 2. Baixe o arquivo MinerU-x86_64.AppImage
+# 3. Torne-o executável
 chmod +x MinerU-x86_64.AppImage
 
-# 3. Execute
+# 4. Execute
 ./MinerU-x86_64.AppImage
 ```
 
-O AppImage é um executável portátil que funciona em **qualquer distribuição Linux** sem instalação de dependências. Basta baixar e executar!
+O AppImage é um executável portátil que funciona em **qualquer distribuição Linux**. Inclui Python e todas as dependências Python, mas requer bibliotecas Qt do sistema (instaladas pelo script acima).
 
 ## Requisitos
 
 - Python 3.8 ou superior
 - Sistema operacional Linux
 - Linux Keyring (geralmente já instalado no sistema)
+- **Bibliotecas do sistema** para Qt/PySide6 (veja abaixo)
+
+### Dependências do Sistema
+
+O aplicativo requer bibliotecas Qt específicas do sistema. Para instalá-las:
+
+**Opção 1: Script automático (recomendado)**
+```bash
+./install_system_deps.sh
+```
+
+**Opção 2: Instalação manual**
+```bash
+apt-get install -y libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 \
+    libxcb-shape0 libxcb-xkb1 libxkbcommon-x11-0 libegl1
+```
+
+Para mais detalhes sobre as dependências do sistema, consulte [SYSTEM_DEPENDENCIES.md](SYSTEM_DEPENDENCIES.md).
 
 ## Instalação
 
@@ -53,14 +74,20 @@ git clone https://github.com/ozp/MinerU-linux-desktop.git
 cd MinerU-linux-desktop
 ```
 
-### 2. Crie um ambiente virtual (recomendado)
+### 2. Instale as dependências do sistema
+
+```bash
+./install_system_deps.sh
+```
+
+### 3. Crie um ambiente virtual (recomendado)
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Instale as dependências
+### 4. Instale as dependências Python
 
 ```bash
 pip install -r requirements.txt
