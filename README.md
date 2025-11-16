@@ -8,17 +8,58 @@ This project provides a user-friendly desktop interface for MinerU, enabling eff
 
 ## Features
 
-- Desktop GUI for MinerU
-- Linux compatibility
+- Desktop GUI built with PySide6
+- API token management with secure storage
+- Configurable processing options:
+  - Force OCR
+  - Formula recognition
+  - Table recognition
+  - Multi-language support (Chinese, English, Portuguese)
 - Document processing capabilities
+- Linux compatibility
 
 ## Installation
 
-Instructions coming soon.
+### Requirements
+
+- Python 3.8 or higher
+- Linux operating system
+
+### Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/ozp/MinerU-linux-desktop.git
+cd MinerU-linux-desktop
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
 ## Usage
 
-Instructions coming soon.
+1. Run the application:
+```bash
+python main.py
+```
+
+2. Configure your API settings:
+   - Go to **File > Settings** (or press `Ctrl+,`)
+   - Enter your MinerU API token
+   - Configure processing options (OCR, formula recognition, table recognition)
+   - Select your preferred OCR language
+   - Click **Save**
+
+3. Start processing documents (coming soon)
+
+## Configuration
+
+Settings are stored locally in `config.ini` (automatically created). This file contains:
+- API token (stored securely, not versioned in git)
+- Processing preferences
+- Language settings
 
 ## License
 
