@@ -20,12 +20,13 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 - ✅ Interface em Português
 - ✅ Seleção de modelo (Pipeline ou VLM)
 - ✅ Suporte otimizado para português com modelo Pipeline
+- ✅ Extração automática de arquivos ZIP após download
 
 ## Download Rápido (AppImage)
 
 **Quer começar rapidamente?** Baixe o AppImage pronto para uso:
 
-### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/raw/claude/fix-zip-structure-01W4oB9Eu61wYXb7acWAeU14/MinerU-x86_64.AppImage) (~72 MB)
+### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/raw/claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3/MinerU-x86_64.AppImage) (~72 MB)
 
 **Como usar:**
 
@@ -132,7 +133,10 @@ python main.py
    - A barra de progresso mostra o upload
    - O status de cada arquivo é atualizado automaticamente
    - Downloads acontecem automaticamente quando prontos
+   - **Os arquivos são automaticamente extraídos** para pastas individuais
 5. Quando concluído, clique em **"Abrir Pasta de Saída"** para ver os resultados
+   - Cada documento processado estará em sua própria pasta
+   - Exemplo: `documento.pdf` → pasta `documento/` com arquivos markdown, imagens, etc.
 
 ## Arquitetura
 
@@ -166,7 +170,9 @@ python main.py
    ↓
 5. Download automático quando pronto
    ↓
-6. Notificação ao usuário
+6. Extração automática de ZIP para pastas
+   ↓
+7. Notificação ao usuário
 ```
 
 ### Segurança
