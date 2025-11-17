@@ -18,6 +18,8 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 - ✅ Feedback de progresso em tempo real
 - ✅ Tratamento robusto de erros
 - ✅ Interface em Português
+- ✅ Seleção de modelo (Pipeline ou VLM)
+- ✅ Suporte otimizado para português com modelo Pipeline
 
 ## Download Rápido (AppImage)
 
@@ -112,7 +114,11 @@ python main.py
    - **Force OCR**: Habilitar OCR para todos os documentos
    - **Enable Formula Recognition**: Detectar e processar fórmulas matemáticas
    - **Enable Table Recognition**: Detectar e processar tabelas
+   - **MinerU Model**: Escolha o modelo de processamento
+     - **Pipeline (Legado - Melhor para Português)**: Recomendado para documentos em português
+     - **VLM (Novo - Sem suporte a idioma)**: Modelo mais recente, mas sem configuração de idioma
    - **Select OCR Language**: Escolha o idioma (Chinês, Inglês, Português)
+     - ⚠️ **Nota**: A configuração de idioma está disponível apenas para o modelo Pipeline
 5. Clique em **Save**
 
 ### 3. Processe documentos
@@ -183,6 +189,7 @@ is_ocr = True
 enable_formula = False
 enable_table = True
 language = pt
+model_version = pipeline
 
 [Paths]
 output_directory = ~/Documentos/MinerU_Output
@@ -192,6 +199,29 @@ output_directory = ~/Documentos/MinerU_Output
 
 - **Documentos**: .pdf, .docx, .pptx
 - **Imagens**: .jpg, .png
+
+## Suporte a Idiomas
+
+### Modelo Pipeline (Recomendado para Português)
+
+O modelo **Pipeline** oferece suporte completo a múltiplos idiomas através do parâmetro `language`:
+
+- ✅ **Português (pt)**: Otimizado para documentos em português brasileiro
+- ✅ **Inglês (en)**: Suporte completo
+- ✅ **Chinês (ch)**: Suporte completo
+- ✅ Outros idiomas suportados pelo [PaddleOCR](https://www.paddleocr.ai/latest/version3.x/algorithm/PP-OCRv5/PP-OCRv5_multi_languages.html)
+
+**Recomendação**: Para documentos em português, utilize sempre o modelo **Pipeline** com o idioma definido como **Português (pt)** para obter os melhores resultados.
+
+### Modelo VLM (Experimental)
+
+O modelo **VLM** é mais recente, mas:
+
+- ⚠️ **Não suporta** configuração de idioma
+- ⚠️ Pode ter **dificuldades com texto em português**
+- ⚠️ Recomendado apenas para documentos em inglês
+
+**Problema Conhecido**: Textos em português podem aparecer com caracteres corrompidos (ex: "içãç b iv ç c d iibiçãaçãçã") ao usar o modelo VLM.
 
 ## Tratamento de Erros
 
