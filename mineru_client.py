@@ -34,6 +34,7 @@ class MineruClient:
         self.enable_formula = False
         self.enable_table = True
         self.language = "pt"
+        self.model_version = "pipeline"  # Use 'pipeline' for better Portuguese support
         self.output_directory = os.path.expanduser("~/Documents/MinerU_Output")
         self.load_config()
 
@@ -57,6 +58,7 @@ class MineruClient:
             self.enable_formula = config["Settings"].getboolean("enable_formula", False)
             self.enable_table = config["Settings"].getboolean("enable_table", True)
             self.language = config["Settings"].get("language", "pt")
+            self.model_version = config["Settings"].get("model_version", "pipeline")
 
         if "Paths" in config:
             output_dir = config["Paths"].get("output_directory", "~/Documents/MinerU_Output")
@@ -86,12 +88,19 @@ class MineruClient:
         Returns:
             dict: Processing configuration options
         """
-        return {
+        options = {
             "is_ocr": self.is_ocr,
             "enable_formula": self.enable_formula,
             "enable_table": self.enable_table,
-            "language": self.language
+            "model_version": self.model_version
         }
+
+        # Only include language parameter for pipeline backend
+        # (VLM doesn't support language configuration)
+        if self.model_version == "pipeline":
+            options["language"] = self.language
+
+        return options
 
     def upload_batch(self, file_paths: List[str], progress_callback: Optional[Callable[[int], None]] = None) -> Dict:
         """
