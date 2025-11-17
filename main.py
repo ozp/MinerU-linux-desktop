@@ -8,6 +8,7 @@ and download processed results.
 
 import sys
 import os
+import zipfile
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QHBoxLayout, QPushButton, QListWidget, QFileDialog,
@@ -327,9 +328,22 @@ class MainWindow(QMainWindow):
                         zip_url = file_info.get("full_zip_url")
                         if zip_url:
                             try:
-                                # Download file
+                                # Download ZIP file
                                 output_filename = f"{os.path.splitext(filename)[0]}_result.zip"
-                                self.mineru_client.download_result(zip_url, output_filename)
+                                zip_path = self.mineru_client.download_result(zip_url, output_filename)
+
+                                # Extract ZIP to folder
+                                extract_folder = os.path.join(
+                                    self.mineru_client.output_directory,
+                                    os.path.splitext(filename)[0]
+                                )
+                                os.makedirs(extract_folder, exist_ok=True)
+
+                                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                                    zip_ref.extractall(extract_folder)
+
+                                # Remove the ZIP file after extraction
+                                os.remove(zip_path)
 
                                 # Update UI
                                 self.update_file_status(filename, "Concluído")
