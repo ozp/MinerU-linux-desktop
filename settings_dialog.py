@@ -90,18 +90,37 @@ class SettingsDialog(QDialog):
         options_layout.addWidget(self.enable_formula_checkbox)
         options_layout.addWidget(self.enable_table_checkbox)
 
+        # Model Version Selection
+        model_layout = QHBoxLayout()
+        model_label = QLabel("MinerU Model:")
+        self.model_combo = QComboBox()
+        self.model_combo.addItem("Pipeline (Legado - Melhor para Português)", "pipeline")
+        self.model_combo.addItem("VLM (Novo - Sem suporte a idioma)", "vlm")
+        self.model_combo.currentIndexChanged.connect(self.on_model_changed)
+
+        model_layout.addWidget(model_label)
+        model_layout.addWidget(self.model_combo)
+        options_layout.addLayout(model_layout)
+
         # Language Selection
         language_layout = QHBoxLayout()
-        language_label = QLabel("Select OCR Language:")
+        self.language_label = QLabel("Select OCR Language:")
         self.language_combo = QComboBox()
         self.language_combo.addItem("Chinese", "ch")
         self.language_combo.addItem("English", "en")
         self.language_combo.addItem("Portuguese", "pt")
 
-        language_layout.addWidget(language_label)
+        language_layout.addWidget(self.language_label)
         language_layout.addWidget(self.language_combo)
 
         options_layout.addLayout(language_layout)
+
+        # Language help text
+        self.language_help = QLabel("Nota: Configuração de idioma apenas disponível para modelo Pipeline")
+        self.language_help.setStyleSheet("color: #FF6B6B; font-size: 10px; font-style: italic;")
+        self.language_help.setWordWrap(True)
+        options_layout.addWidget(self.language_help)
+
         options_group.setLayout(options_layout)
 
         # Buttons
@@ -136,6 +155,17 @@ class SettingsDialog(QDialog):
         if folder:
             self.output_path_input.setText(folder)
 
+    def on_model_changed(self):
+        """Handle model selection change to enable/disable language settings."""
+        is_pipeline = self.model_combo.currentData() == "pipeline"
+        self.language_label.setEnabled(is_pipeline)
+        self.language_combo.setEnabled(is_pipeline)
+
+        if not is_pipeline:
+            self.language_help.setStyleSheet("color: #FF6B6B; font-size: 10px; font-style: italic; font-weight: bold;")
+        else:
+            self.language_help.setStyleSheet("color: #FF6B6B; font-size: 10px; font-style: italic;")
+
     def load_settings(self):
         """Load settings from keyring and config file."""
         # Load token from keyring (secure storage)
@@ -156,6 +186,11 @@ class SettingsDialog(QDialog):
             index = self.language_combo.findData("pt")
             if index >= 0:
                 self.language_combo.setCurrentIndex(index)
+            # Set pipeline as default model
+            model_index = self.model_combo.findData("pipeline")
+            if model_index >= 0:
+                self.model_combo.setCurrentIndex(model_index)
+            self.on_model_changed()
             return
 
         config = configparser.ConfigParser()
@@ -178,10 +213,20 @@ class SettingsDialog(QDialog):
                 config["Settings"].getboolean("enable_table", True)
             )
 
+            # Load model version
+            model_version = config["Settings"].get("model_version", "pipeline")
+            model_index = self.model_combo.findData(model_version)
+            if model_index >= 0:
+                self.model_combo.setCurrentIndex(model_index)
+
+            # Load language
             language = config["Settings"].get("language", "pt")
             index = self.language_combo.findData(language)
             if index >= 0:
                 self.language_combo.setCurrentIndex(index)
+
+            # Update UI based on model selection
+            self.on_model_changed()
 
     def save_settings(self):
         """Save settings to keyring and config file."""
@@ -219,7 +264,8 @@ class SettingsDialog(QDialog):
                 "is_ocr": str(self.force_ocr_checkbox.isChecked()),
                 "enable_formula": str(self.enable_formula_checkbox.isChecked()),
                 "enable_table": str(self.enable_table_checkbox.isChecked()),
-                "language": self.language_combo.currentData()
+                "language": self.language_combo.currentData(),
+                "model_version": self.model_combo.currentData()
             }
 
             config["Paths"] = {

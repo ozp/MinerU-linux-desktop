@@ -3,6 +3,7 @@ is_ocr = True
 enable_formula = False
 enable_table = True
 language = pt
+model_version = pipeline
 
 [Paths]
 output_directory = ~/Documentos/MinerU_Output
