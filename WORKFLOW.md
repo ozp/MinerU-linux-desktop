@@ -344,7 +344,6 @@ git log --oneline --graph --all -20
    ```
 
 6. **Trabalho pela CLI** - Todo o workflow pode ser feito via linha de comando, sem necessidade de mexer na interface do GitHub (exceto para criar/aceitar PRs)
-
 ---
 
 ## Resumo dos Arquivos Importantes
