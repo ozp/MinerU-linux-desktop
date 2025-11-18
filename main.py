@@ -321,6 +321,17 @@ class MainWindow(QMainWindow):
         if not self.current_batch_id:
             return
 
+        # Stop and cleanup existing timer if it exists
+        if self.polling_timer:
+            if self.polling_timer.isActive():
+                self.polling_timer.stop()
+            try:
+                self.polling_timer.timeout.disconnect()
+            except:
+                pass  # Ignore if no connections exist
+            self.polling_timer.deleteLater()
+            self.polling_timer = None
+
         # Create and start timer (poll every 10 seconds)
         self.polling_timer = QTimer(self)
         self.polling_timer.timeout.connect(self.check_batch_status)
@@ -395,6 +406,12 @@ class MainWindow(QMainWindow):
             if all_done:
                 if self.polling_timer:
                     self.polling_timer.stop()
+                    try:
+                        self.polling_timer.timeout.disconnect()
+                    except:
+                        pass  # Ignore if no connections exist
+                    self.polling_timer.deleteLater()
+                    self.polling_timer = None
                 QMessageBox.information(
                     self,
                     "Processamento Concluído",
@@ -430,8 +447,15 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Handle application close event."""
         # Stop polling timer if running
-        if self.polling_timer and self.polling_timer.isActive():
-            self.polling_timer.stop()
+        if self.polling_timer:
+            if self.polling_timer.isActive():
+                self.polling_timer.stop()
+            try:
+                self.polling_timer.timeout.disconnect()
+            except:
+                pass  # Ignore if no connections exist
+            self.polling_timer.deleteLater()
+            self.polling_timer = None
 
         # Wait for upload worker to finish
         if self.upload_worker and self.upload_worker.isRunning():
