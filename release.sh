@@ -146,13 +146,14 @@ echo -e "${GREEN}✓ README atualizado (automático via version.py)${NC}"
 echo ""
 echo -e "${BLUE}[5/6] Criando commit...${NC}"
 # Git operations
-git add version.py CHANGELOG.md README.md MinerU-${NEW_VERSION}-x86_64.AppImage MinerU-x86_64.AppImage
+# Note: AppImages are NOT added to git - they go to GitHub Releases only
+git add version.py CHANGELOG.md README.md
 git commit -m "Release version ${NEW_VERSION}
 
 ${DESCRIPTION}
 
 - Versão atualizada para ${NEW_VERSION}
-- AppImage reconstruído
+- AppImage disponibilizado
 - CHANGELOG atualizado
 "
 echo -e "${GREEN}✓ Commit criado${NC}"
@@ -174,11 +175,15 @@ echo -e "${YELLOW}Próximos passos:${NC}"
 echo "1. Revisar as mudanças: git log -1 -p"
 echo "2. Fazer push do commit: git push origin $(git branch --show-current)"
 echo "3. Fazer push da tag: git push origin v${NEW_VERSION}"
+echo "4. Criar GitHub Release e fazer upload do AppImage:"
+echo "   gh release create v${NEW_VERSION} MinerU-${NEW_VERSION}-x86_64.AppImage --title \"v${NEW_VERSION}\" --notes \"${DESCRIPTION}\""
 echo ""
 echo -e "${BLUE}Ou fazer push de tudo de uma vez:${NC}"
 echo "git push origin $(git branch --show-current) && git push origin v${NEW_VERSION}"
 echo ""
 echo -e "${GREEN}Arquivos criados:${NC}"
-echo "- MinerU-${NEW_VERSION}-x86_64.AppImage"
+echo "- MinerU-${NEW_VERSION}-x86_64.AppImage (para upload no GitHub Release)"
 echo "- MinerU-x86_64.AppImage (symlink)"
+echo ""
+echo -e "${YELLOW}IMPORTANTE: O AppImage deve ser feito upload para GitHub Releases, não commitado no git${NC}"
 echo ""
