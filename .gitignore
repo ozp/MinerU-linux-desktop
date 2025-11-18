@@ -49,5 +49,5 @@ dist/
 squashfs-root/
 appimagetool-x86_64.AppImage
 
-# Keep the final AppImage
-!MinerU-x86_64.AppImage
+# Keep versioned AppImages and the symlink
+!MinerU-*.AppImage
