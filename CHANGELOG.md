@@ -5,6 +5,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.0.1] - 2025-11-18
+
+### Correções
+- Melhorias na verificação de status de processamento em lote
+- Maior confiabilidade no processamento de múltiplos arquivos
+- Correções de bugs no sistema de upload e download
+
+### Mudanças
+- AppImage atualizado para versão 1.0.1
+- README mantém informações atualizadas sobre o sistema
+
 ## [1.0.0] - 2025-11-18
 
 ### Adicionado
