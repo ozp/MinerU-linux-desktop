@@ -352,19 +352,40 @@ class MainWindow(QMainWindow):
             data = status_data.get("data", {})
             files_info = data.get("extract_result", [])
 
+            print(f"[DEBUG] Checking batch {self.current_batch_id}")
+            print(f"[DEBUG] Found {len(files_info)} files in API response")
+
+            # Create a map of files in the API response for easy lookup
+            api_files_map = {f.get("file_name"): f for f in files_info}
+
             all_done = True
             has_completed = False
+            files_still_processing = 0
 
-            for file_info in files_info:
-                filename = file_info.get("file_name")
+            # Check all files that were uploaded (from file_status_map)
+            for filename, current_status in list(self.file_status_map.items()):
+                # Skip files that are already in a final state
+                if current_status in ["completed", "failed", "download_failed"]:
+                    continue
+
+                # Check if this file is in the API response
+                if filename not in api_files_map:
+                    print(f"[DEBUG] File {filename} not yet in API response")
+                    all_done = False
+                    files_still_processing += 1
+                    continue
+
+                file_info = api_files_map[filename]
                 state = file_info.get("state")
+                print(f"[DEBUG] File: {filename}, State: {state}")
 
                 if state == "done":
                     # Download the result if not already downloaded
-                    if self.file_status_map.get(filename) != "completed":
+                    if current_status != "completed":
                         zip_url = file_info.get("full_zip_url")
                         if zip_url:
                             try:
+                                print(f"[DEBUG] Downloading result for {filename}")
                                 # Download ZIP file
                                 output_filename = f"{os.path.splitext(filename)[0]}_result.zip"
                                 zip_path = self.mineru_client.download_result(zip_url, output_filename)
@@ -386,17 +407,40 @@ class MainWindow(QMainWindow):
                                 self.update_file_status(filename, "Concluído")
                                 self.file_status_map[filename] = "completed"
                                 has_completed = True
+                                print(f"[DEBUG] Successfully downloaded and extracted {filename}")
                             except Exception as e:
+                                print(f"[DEBUG] Error downloading {filename}: {e}")
                                 self.update_file_status(filename, f"Erro no Download - {str(e)}")
                                 self.file_status_map[filename] = "download_failed"
+                        else:
+                            print(f"[DEBUG] No zip_url for {filename}")
+                            self.update_file_status(filename, "Erro - URL não encontrada")
+                            self.file_status_map[filename] = "download_failed"
 
                 elif state == "failed":
                     err_msg = file_info.get("err_msg", "Unknown error")
+                    print(f"[DEBUG] File {filename} failed: {err_msg}")
                     self.update_file_status(filename, f"Falha - {err_msg}")
                     self.file_status_map[filename] = "failed"
 
                 elif state in ["processing", "pending"]:
+                    print(f"[DEBUG] File {filename} still {state}")
                     all_done = False
+                    files_still_processing += 1
+                    # Update UI to show current state
+                    if state == "processing":
+                        self.update_file_status(filename, "Processando no servidor...")
+                    else:
+                        self.update_file_status(filename, "Na fila...")
+
+                else:
+                    # Unknown state - don't mark as done
+                    print(f"[DEBUG] Unknown state '{state}' for {filename}")
+                    all_done = False
+                    files_still_processing += 1
+
+            print(f"[DEBUG] Files still processing: {files_still_processing}")
+            print(f"[DEBUG] All done: {all_done}")
 
             # Enable open folder button if any file completed
             if has_completed:
@@ -420,7 +464,9 @@ class MainWindow(QMainWindow):
                 )
 
         except Exception as e:
-            print(f"Error checking batch status: {e}")
+            print(f"[ERROR] Error checking batch status: {e}")
+            import traceback
+            traceback.print_exc()
             # Continue polling even if there's an error
 
     def update_file_status(self, filename, status):
