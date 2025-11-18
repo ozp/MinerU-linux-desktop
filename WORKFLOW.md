@@ -2,8 +2,10 @@
 
 ## Status Atual do Repositório
 
-Este é um **repositório novo sem branch padrão** (main/master).
-Todas as alterações são feitas em branches específicas do Claude.
+✅ **Branch Principal Criada:** `claude/main-01XF8HRK32aUmkqqJEyCH5SK`
+
+Esta branch contém todo o código estável e será a base para novos desenvolvimentos.
+Todas as novas funcionalidades devem partir desta branch.
 
 ## Verificação Antes de Criar PR
 
@@ -114,17 +116,17 @@ Como o `gh` CLI não está disponível, use a interface web:
 
 ## Para Novas Sessões: Como Criar Nova Branch
 
-### Cenário 1: Após Merge do PR Atual
+### Workflow Padrão (Recomendado)
 
-Quando o PR da branch `claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3` for aceito:
+Sempre crie novas branches a partir de `claude/main-01XF8HRK32aUmkqqJEyCH5SK`:
 
 ```bash
 # 1. Sincronizar com o remote
 git fetch origin
 
-# 2. Se uma branch main/master for criada após o merge
-git checkout main  # ou master
-git pull origin main
+# 2. Fazer checkout da branch principal
+git checkout claude/main-01XF8HRK32aUmkqqJEyCH5SK
+git pull origin claude/main-01XF8HRK32aUmkqqJEyCH5SK
 
 # 3. Criar nova branch para próximo trabalho
 git checkout -b claude/nova-feature-[SESSION_ID]
@@ -136,54 +138,34 @@ git checkout -b claude/nova-feature-[SESSION_ID]
 git add .
 git commit -m "Descrição das mudanças"
 git push -u origin claude/nova-feature-[SESSION_ID]
+
+# 6. Criar PR no GitHub para mergear em claude/main-01XF8HRK32aUmkqqJEyCH5SK
 ```
 
-### Cenário 2: Repositório Ainda Sem Branch Padrão
+### Após Merge do PR
 
-Se o repositório continuar sem main/master:
+Quando seu PR for aceito e mergeado em `claude/main`:
 
 ```bash
-# 1. Listar branches existentes
-git branch -r
+# 1. Voltar para a branch principal
+git checkout claude/main-01XF8HRK32aUmkqqJEyCH5SK
 
-# 2. Verificar qual branch tem mais commits (base mais recente)
-git log --oneline --graph --all -10
+# 2. Atualizar com as mudanças mergeadas
+git pull origin claude/main-01XF8HRK32aUmkqqJEyCH5SK
 
-# 3. Criar nova branch a partir da branch mais atualizada
-git fetch origin
-git checkout -b claude/nova-feature-[SESSION_ID] origin/claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3
-
-# 4. Trabalhar normalmente
-# ... fazer alterações ...
-
-# 5. Commit e push
-git add .
-git commit -m "Descrição das mudanças"
-git push -u origin claude/nova-feature-[SESSION_ID]
+# 3. Agora pode criar nova branch para próximo trabalho
+git checkout -b claude/proxima-feature-[SESSION_ID]
 ```
 
-### Cenário 3: Criar Branch Padrão Manualmente
+### Configurar Branch Padrão no GitHub (Opcional)
 
-Se quiser criar uma branch `main` como padrão:
+Para facilitar, você pode configurar `claude/main-01XF8HRK32aUmkqqJEyCH5SK` como branch padrão:
 
-```bash
-# 1. A partir da branch atual (que tem todo o código)
-git checkout claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3
+1. No GitHub: **Settings** → **Branches** → **Default branch**
+2. Selecione `claude/main-01XF8HRK32aUmkqqJEyCH5SK`
+3. Confirme
 
-# 2. Criar branch main localmente
-git checkout -b main
-
-# 3. Fazer push da branch main
-git push -u origin main
-
-# 4. No GitHub, vá em Settings > Branches > Default branch
-#    e configure 'main' como branch padrão
-
-# 5. Agora pode trabalhar normalmente com main como base
-git checkout main
-git pull origin main
-git checkout -b claude/nova-feature-[SESSION_ID]
-```
+Assim todos os PRs irão automaticamente comparar com essa branch.
 
 ---
 
@@ -348,11 +330,11 @@ git log --oneline --graph --all -20
 
 ## Observações Importantes
 
-1. **Este repositório não tem branch padrão ainda** - trabalhe sempre criando branches específicas
+1. **Branch Principal:** `claude/main-01XF8HRK32aUmkqqJEyCH5SK` - sempre use como base para novos desenvolvimentos
 
 2. **AppImage tem 72MB** - GitHub vai avisar sobre arquivo grande, mas está OK
 
-3. **Session ID** - Cada branch do Claude tem um ID único no final (ex: 01PBcjzj5Rp4yF4VET7FHrW3)
+3. **Session ID** - Cada branch do Claude tem um ID único no final (ex: 01XF8HRK32aUmkqqJEyCH5SK)
 
 4. **PR via Web** - Use sempre a interface web do GitHub para criar PRs, pois `gh` CLI não está disponível
 
@@ -360,6 +342,8 @@ git log --oneline --graph --all -20
    ```
    https://github.com/ozp/MinerU-linux-desktop/pull/new/[nome-da-branch]
    ```
+
+6. **Trabalho pela CLI** - Todo o workflow pode ser feito via linha de comando, sem necessidade de mexer na interface do GitHub (exceto para criar/aceitar PRs)
 
 ---
 
@@ -383,12 +367,16 @@ MinerU-linux-desktop/
 ## Branches Disponíveis no Repositório
 
 ```
-origin/claude/add-appimage-download-01QHvzyC7JoJurCxyVFXJesM
+origin/claude/main-01XF8HRK32aUmkqqJEyCH5SK                    ← PRINCIPAL ⭐
+origin/claude/fix-portuguese-zip-extraction-01XF8HRK32aUmkqqJEyCH5SK
+origin/claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3
 origin/claude/add-repo-info-01Wrjx3xjDZA4bK6PbQR7H8X
 origin/claude/fix-download-links-01A7uu7FhWZYDYCPo2uUMG3A
-origin/claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3  ← ATUAL
+origin/claude/add-appimage-download-01QHvzyC7JoJurCxyVFXJesM
 origin/claude/fix-file-upload-api-01AfoEp2LNRfo9PA9NoU4DnB
 origin/claude/fix-pyside6-import-01X9F9uGR9D9HuQRA4yRfVUH
 origin/claude/fix-qt-plugin-error-014szein3YXC8NBVfBwtWAet
 origin/claude/fix-zip-structure-01W4oB9Eu61wYXb7acWAeU14
 ```
+
+**Use `claude/main-01XF8HRK32aUmkqqJEyCH5SK` como base para todos os novos desenvolvimentos!**
