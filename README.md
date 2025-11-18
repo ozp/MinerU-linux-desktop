@@ -26,7 +26,9 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 
 **Quer começar rapidamente?** Baixe o AppImage pronto para uso:
 
-### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/raw/claude/add-vlm-model-selection-014RYhh5rNndLzY3VM9LFC33/MinerU-x86_64.AppImage) (~72 MB)
+### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/releases/latest) (~72 MB)
+
+> **Nota sobre Versionamento**: A partir da versão 1.0.0, os AppImages são versionados (ex: `MinerU-1.0.0-x86_64.AppImage`). O link `MinerU-x86_64.AppImage` é um symlink que sempre aponta para a versão mais recente.
 
 **Como usar:**
 
@@ -34,7 +36,7 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 # 1. Instale as bibliotecas Qt do sistema (apenas uma vez)
 ./install_system_deps.sh
 
-# 2. Baixe o arquivo MinerU-x86_64.AppImage
+# 2. Baixe o arquivo MinerU-x86_64.AppImage (ou versão específica)
 # 3. Torne-o executável
 chmod +x MinerU-x86_64.AppImage
 
@@ -43,6 +45,12 @@ chmod +x MinerU-x86_64.AppImage
 ```
 
 O AppImage é um executável portátil que funciona em **qualquer distribuição Linux**. Inclui Python e todas as dependências Python, mas requer bibliotecas Qt do sistema (instaladas pelo script acima).
+
+### Verificando a Versão
+
+Para verificar a versão do aplicativo instalado:
+- Abra o aplicativo e vá em **Ajuda > Sobre** no menu
+- A versão também é exibida no título da janela
 
 ## Requisitos
 
