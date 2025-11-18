@@ -187,6 +187,132 @@ git checkout -b claude/nova-feature-[SESSION_ID]
 
 ---
 
+## 🏷️ Versionamento Semântico (Tags e Releases)
+
+### O que é Versionamento Semântico?
+
+Usamos o formato **v0.0.1**, **v0.0.2**, etc. (também conhecido como SemVer):
+
+```
+v MAJOR . MINOR . PATCH
+  │       │       │
+  │       │       └─ Correções de bugs (bug fixes)
+  │       └───────── Novas funcionalidades (features)
+  └───────────────── Mudanças incompatíveis (breaking changes)
+```
+
+**Exemplos:**
+- `v1.0.0` → Primeira versão estável
+- `v1.1.0` → Adicionou nova funcionalidade
+- `v1.1.1` → Corrigiu um bug
+- `v2.0.0` → Mudança que quebra compatibilidade
+
+### Como Criar uma Nova Versão (Release)
+
+#### 1. Via Interface do GitHub (Recomendado)
+
+**Passo a Passo:**
+
+1. Acesse: https://github.com/ozp/MinerU-linux-desktop/releases
+
+2. Clique em **"Create a new release"**
+
+3. Preencha:
+   - **Tag version**: `v1.0.0` (ou a versão desejada)
+   - **Target**: `main` (ou a branch desejada)
+   - **Release title**: Mesmo que a tag (ex: `v1.0.0`)
+   - **Description**: O que mudou nessa versão
+
+4. Se tiver AppImage novo:
+   - Arraste o arquivo `MinerU-x86_64.AppImage` para a área de anexos
+   - Isso cria um link permanente para download
+
+5. Clique em **"Publish release"**
+
+**Exemplo de Descrição:**
+
+```markdown
+## 🎉 Release v1.0.0
+
+### Novidades
+- ✅ Suporte completo a português (modelo Pipeline)
+- ✅ Extração automática de arquivos ZIP
+- ✅ Interface de seleção de modelo VLM/Pipeline
+- ✅ AppImage otimizado (72MB)
+
+### Correções
+- 🐛 Textos em português não aparecem mais corrompidos
+- 🐛 Downloads são extraídos automaticamente
+
+### Como Usar
+Baixe o AppImage, dê permissão de execução e rode!
+
+```bash
+chmod +x MinerU-x86_64.AppImage
+./MinerU-x86_64.AppImage
+```
+
+### Configuração Recomendada
+- **Model**: Pipeline (Legado)
+- **Language**: Portuguese (pt)
+```
+
+#### 2. Via Git (Linha de Comando)
+
+Se preferir criar tags localmente:
+
+```bash
+# 1. Certifique-se de estar na branch main atualizada
+git checkout main
+git pull origin main
+
+# 2. Criar tag anotada (recomendado)
+git tag -a v1.0.0 -m "Release v1.0.0 - Portuguese support and auto ZIP extraction"
+
+# 3. Fazer push da tag
+git push origin v1.0.0
+
+# 4. Ver todas as tags
+git tag -l
+
+# 5. Depois vá no GitHub criar o Release associado a essa tag
+```
+
+### Histórico de Versões (Exemplo)
+
+| Versão | Data | Descrição |
+|--------|------|-----------|
+| v1.0.1 | 2024-XX-XX | Correção: Bug na extração de ZIP |
+| v1.0.0 | 2024-XX-XX | Primeira versão: Suporte a português + auto-extract |
+| v0.1.0 | 2024-XX-XX | Beta: Interface básica |
+
+### Quando Criar uma Nova Versão?
+
+- **Sempre que houver mudanças importantes** mergeadas na `main`
+- **Quando reconstruir o AppImage** com novas funcionalidades
+- **Após correção de bugs críticos**
+
+### Comandos Úteis para Tags
+
+```bash
+# Listar todas as tags
+git tag
+
+# Ver detalhes de uma tag
+git show v1.0.0
+
+# Deletar tag local
+git tag -d v1.0.0
+
+# Deletar tag remota (cuidado!)
+git push origin --delete v1.0.0
+
+# Fazer checkout de uma versão específica
+git checkout v1.0.0
+```
+
+---
+
 ## Comandos Úteis para Verificação
 
 ```bash
