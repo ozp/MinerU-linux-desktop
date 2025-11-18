@@ -26,7 +26,7 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 
 **Quer começar rapidamente?** Baixe o AppImage pronto para uso:
 
-### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/raw/claude/fix-file-reading-web-01PBcjzj5Rp4yF4VET7FHrW3/MinerU-x86_64.AppImage) (~72 MB)
+### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/raw/claude/add-vlm-model-selection-014RYhh5rNndLzY3VM9LFC33/MinerU-x86_64.AppImage) (~72 MB)
 
 **Como usar:**
 

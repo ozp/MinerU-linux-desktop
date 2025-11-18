@@ -83,13 +83,15 @@ class MineruClient:
 
     def get_processing_options(self) -> Dict[str, any]:
         """
-        Get current processing options.
+        Get current processing options for batch-level parameters.
+
+        Note: is_ocr is NOT included here as it must be set at the file level
+        according to the API specification.
 
         Returns:
             dict: Processing configuration options
         """
         options = {
-            "is_ocr": self.is_ocr,
             "enable_formula": self.enable_formula,
             "enable_table": self.enable_table,
             "model_version": self.model_version
@@ -128,7 +130,8 @@ class MineruClient:
         api_url = f"{self.API_BASE_URL}/file-urls/batch"
 
         # Prepare file list
-        files_list = [{"name": os.path.basename(fp)} for fp in file_paths]
+        # Note: is_ocr parameter must be included at the file level, not batch level
+        files_list = [{"name": os.path.basename(fp), "is_ocr": self.is_ocr} for fp in file_paths]
 
         # Prepare request body with files and processing options
         request_body = {
