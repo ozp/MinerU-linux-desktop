@@ -18,6 +18,7 @@ from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices
 from settings_dialog import SettingsDialog
 from mineru_client import MineruClient
+from version import VERSION, VERSION_STRING
 
 
 class UploadWorker(QThread):
@@ -60,7 +61,7 @@ class MainWindow(QMainWindow):
 
     def setup_ui(self):
         """Set up the user interface."""
-        self.setWindowTitle("MinerU Desktop Client")
+        self.setWindowTitle(f"MinerU Desktop Client v{VERSION}")
         self.setMinimumSize(800, 650)
 
         # Create menu bar
@@ -149,12 +150,37 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
+        # Help menu
+        help_menu = menubar.addMenu("&Ajuda")
+
+        # About action
+        about_action = QAction("&Sobre", self)
+        about_action.triggered.connect(self.show_about)
+        help_menu.addAction(about_action)
+
     def open_settings(self):
         """Open the settings dialog."""
         dialog = SettingsDialog(self)
         if dialog.exec():
             # Reload client config after settings change
             self.mineru_client.load_config()
+
+    def show_about(self):
+        """Show the about dialog with version information."""
+        QMessageBox.about(
+            self,
+            "Sobre o MinerU Desktop Client",
+            f"<h2>{VERSION_STRING}</h2>"
+            "<p>Um cliente desktop para a API do MinerU, desenvolvido em Python com PySide6.</p>"
+            "<p><b>Funcionalidades:</b></p>"
+            "<ul>"
+            "<li>Upload de arquivos em lote</li>"
+            "<li>Processamento automático</li>"
+            "<li>Download e extração de resultados</li>"
+            "<li>Interface em Português</li>"
+            "</ul>"
+            "<p><b>Repositório:</b> <a href='https://github.com/ozp/MinerU-linux-desktop'>github.com/ozp/MinerU-linux-desktop</a></p>"
+        )
 
     def add_files(self):
         """Open file dialog to select files for processing."""

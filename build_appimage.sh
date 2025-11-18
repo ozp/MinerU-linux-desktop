@@ -12,6 +12,11 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Extract version from version.py
+VERSION=$(python3 -c "import sys; sys.path.insert(0, '.'); from version import VERSION; print(VERSION)")
+echo -e "${GREEN}Building version: ${VERSION}${NC}"
+echo ""
+
 # Check if running in a virtual environment (recommended)
 if [[ -z "$VIRTUAL_ENV" ]]; then
     echo -e "${YELLOW}Warning: Not running in a virtual environment.${NC}"
@@ -28,7 +33,7 @@ pip install -q pyinstaller
 
 # Step 2: Clean previous builds
 echo -e "${GREEN}[2/6] Cleaning previous builds...${NC}"
-rm -rf build/ dist/ MinerU.AppDir/ MinerU-x86_64.AppImage
+rm -rf build/ dist/ MinerU.AppDir/ MinerU-*.AppImage
 
 # Step 3: Build with PyInstaller
 echo -e "${GREEN}[3/6] Building with PyInstaller...${NC}"
@@ -82,16 +87,20 @@ fi
 
 # Step 6: Generate the AppImage
 echo -e "${GREEN}[6/6] Generating AppImage...${NC}"
-ARCH=x86_64 squashfs-root/AppRun --no-appstream MinerU.AppDir MinerU-x86_64.AppImage
+APPIMAGE_NAME="MinerU-${VERSION}-x86_64.AppImage"
+ARCH=x86_64 squashfs-root/AppRun --no-appstream MinerU.AppDir "${APPIMAGE_NAME}"
 
 # Verify the AppImage was created
-if [ ! -f "MinerU-x86_64.AppImage" ]; then
+if [ ! -f "${APPIMAGE_NAME}" ]; then
     echo -e "${RED}Error: AppImage creation failed${NC}"
     exit 1
 fi
 
 # Make it executable
-chmod +x MinerU-x86_64.AppImage
+chmod +x "${APPIMAGE_NAME}"
+
+# Create a symlink for convenience (always points to latest)
+ln -sf "${APPIMAGE_NAME}" MinerU-x86_64.AppImage
 
 # Display results
 echo ""
@@ -99,8 +108,10 @@ echo -e "${GREEN}=========================================="
 echo "Build completed successfully!"
 echo "==========================================${NC}"
 echo ""
-echo "AppImage created: MinerU-x86_64.AppImage"
-ls -lh MinerU-x86_64.AppImage
+echo "AppImage created: ${APPIMAGE_NAME}"
+ls -lh "${APPIMAGE_NAME}"
+echo ""
+echo "Symlink created: MinerU-x86_64.AppImage -> ${APPIMAGE_NAME}"
 echo ""
 echo "To run the application:"
 echo ""
@@ -108,6 +119,8 @@ echo -e "${YELLOW}IMPORTANT: First-time users must install Qt system libraries:$
 echo "  ./install_system_deps.sh"
 echo ""
 echo "Then run the application:"
+echo "  ./${APPIMAGE_NAME}"
+echo "  or"
 echo "  ./MinerU-x86_64.AppImage"
 echo ""
 echo "For more information, see SYSTEM_DEPENDENCIES.md"
