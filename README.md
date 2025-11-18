@@ -260,10 +260,19 @@ MinerU-linux-desktop/
 ├── main.py                 # Aplicação principal
 ├── settings_dialog.py      # Diálogo de configurações
 ├── mineru_client.py        # Cliente da API
+├── version.py              # Informações de versão
 ├── requirements.txt        # Dependências Python
 ├── config.ini.example      # Exemplo de configuração
+├── build_appimage.sh       # Script de build do AppImage
+├── release.sh              # Script de release automatizado
+├── install_system_deps.sh  # Instalador de dependências do sistema
 ├── .gitignore             # Arquivos ignorados pelo git
-└── README.md              # Esta documentação
+├── README.md              # Esta documentação
+├── RELEASE_PROCESS.md     # Documentação do processo de release
+├── CHANGELOG.md           # Histórico de mudanças
+├── BUILD.md               # Guia de build
+├── WORKFLOW.md            # Workflow de desenvolvimento
+└── SYSTEM_DEPENDENCIES.md # Documentação de dependências
 ```
 
 ### Dependências
@@ -271,6 +280,41 @@ MinerU-linux-desktop/
 - **PySide6**: Framework de GUI Qt para Python
 - **requests**: Cliente HTTP para chamadas de API
 - **keyring**: Armazenamento seguro de credenciais
+
+### Sistema de Release Automatizado
+
+Este projeto utiliza um sistema de release automatizado que garante consistência entre versões, README e AppImage.
+
+#### Como Fazer uma Release
+
+```bash
+# Correção de bugs (1.0.0 → 1.0.1)
+./release.sh patch "Descrição das mudanças"
+
+# Nova funcionalidade (1.0.0 → 1.1.0)
+./release.sh minor "Descrição das mudanças"
+
+# Breaking changes (1.0.0 → 2.0.0)
+./release.sh major "Descrição das mudanças"
+```
+
+O script `release.sh` automaticamente:
+- ✅ Atualiza a versão em `version.py`
+- ✅ Reconstrói o AppImage com a nova versão
+- ✅ Atualiza o CHANGELOG.md
+- ✅ Cria commit e tag Git
+- ✅ Garante consistência em todos os arquivos
+
+Para mais detalhes, consulte **[RELEASE_PROCESS.md](RELEASE_PROCESS.md)**.
+
+#### Versionamento
+
+O projeto segue [Semantic Versioning](https://semver.org/lang/pt-BR/):
+- **MAJOR**: Mudanças incompatíveis na API
+- **MINOR**: Novas funcionalidades de forma compatível
+- **PATCH**: Correções de bugs compatíveis
+
+A versão é definida centralmente em `version.py` e usada por toda a aplicação.
 
 ## Solução de Problemas
 
