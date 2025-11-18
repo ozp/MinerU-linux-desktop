@@ -206,6 +206,33 @@ O sistema gerencia automaticamente:
 
 ## Resolução de Problemas
 
+### Erro: AppImage mostra versão incorreta (ex: 1.0.0 ao invés de 1.0.1)
+
+**Sintoma:** O AppImage está nomeado como `MinerU-1.0.1-x86_64.AppImage` mas ao executar, a aplicação mostra versão 1.0.0.
+
+**Causa:** O AppImage foi construído com uma versão antiga do código onde `version.py` ainda tinha a versão anterior.
+
+**Solução:**
+```bash
+# 1. Verificar a versão atual em version.py
+cat version.py | grep VERSION
+
+# 2. Reconstruir o AppImage em um ambiente virtual limpo
+python3 -m venv venv_build
+source venv_build/bin/activate
+./build_appimage.sh
+deactivate
+
+# 3. Verificar se a versão está correta executando o AppImage
+./MinerU-1.0.1-x86_64.AppImage
+
+# 4. Commit do AppImage atualizado
+git add MinerU-1.0.1-x86_64.AppImage
+git commit -m "Fix: Rebuild AppImage with correct version"
+```
+
+**Prevenção:** Use sempre o script `release.sh` que automaticamente reconstrói o AppImage após atualizar a versão.
+
 ### Erro: "AppImage build failed"
 
 Se o build do AppImage falhar:
