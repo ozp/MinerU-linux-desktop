@@ -12,6 +12,15 @@ import requests
 import keyring
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Optional, Callable
+from exceptions import (
+    ConfigurationError, AuthenticationError, ValidationError,
+    APIError, NetworkError, UploadError, DownloadError
+)
+from validators import (
+    validate_api_token, validate_file_path, validate_directory_path,
+    validate_file_format, validate_batch_id, validate_language_code,
+    validate_model_version
+)
 
 
 class MineruClient:
@@ -39,10 +48,19 @@ class MineruClient:
         self.load_config()
 
     def load_config(self):
-        """Load configuration from keyring and config file."""
+        """Load configuration from keyring and config file.
+
+        Raises:
+            ConfigurationError: If configuration is invalid
+        """
         # Load token from keyring (secure storage)
         try:
-            self.api_token = keyring.get_password(self.KEYRING_SERVICE, self.KEYRING_USERNAME)
+            token = keyring.get_password(self.KEYRING_SERVICE, self.KEYRING_USERNAME)
+            if token:
+                self.api_token = validate_api_token(token)
+        except ValidationError:
+            # Re-raise validation errors
+            raise
         except Exception as e:
             print(f"Warning: Could not load token from keyring: {e}")
 
@@ -57,12 +75,30 @@ class MineruClient:
             self.is_ocr = config["Settings"].getboolean("is_ocr", True)
             self.enable_formula = config["Settings"].getboolean("enable_formula", False)
             self.enable_table = config["Settings"].getboolean("enable_table", True)
-            self.language = config["Settings"].get("language", "pt")
-            self.model_version = config["Settings"].get("model_version", "pipeline")
+
+            # Validate language
+            language = config["Settings"].get("language", "pt")
+            try:
+                self.language = validate_language_code(language)
+            except ValidationError as e:
+                print(f"Warning: Invalid language code '{language}', using default 'pt': {e}")
+                self.language = "pt"
+
+            # Validate model version
+            model_version = config["Settings"].get("model_version", "pipeline")
+            try:
+                self.model_version = validate_model_version(model_version)
+            except ValidationError as e:
+                print(f"Warning: Invalid model version '{model_version}', using default 'pipeline': {e}")
+                self.model_version = "pipeline"
 
         if "Paths" in config:
             output_dir = config["Paths"].get("output_directory", "~/Documents/MinerU_Output")
-            self.output_directory = os.path.expanduser(output_dir)
+            try:
+                self.output_directory = validate_directory_path(output_dir, create_if_missing=True)
+            except ValidationError as e:
+                print(f"Warning: Invalid output directory '{output_dir}', using default: {e}")
+                self.output_directory = os.path.expanduser("~/Documents/MinerU_Output")
 
     def get_headers(self) -> Dict[str, str]:
         """
@@ -72,10 +108,10 @@ class MineruClient:
             dict: Headers including Authorization bearer token
 
         Raises:
-            ValueError: If API token is not configured
+            AuthenticationError: If API token is not configured
         """
         if not self.api_token:
-            raise ValueError("API token not configured. Please set it in Settings.")
+            raise AuthenticationError("API token not configured. Please set it in Settings.")
 
         return {
             "Authorization": f"Bearer {self.api_token}"
@@ -120,11 +156,25 @@ class MineruClient:
             dict: Response containing batch_id and upload status
 
         Raises:
-            ValueError: If API token is not configured or no files provided
-            requests.RequestException: If API request fails
+            ValidationError: If files are invalid
+            AuthenticationError: If API token is not configured
+            UploadError: If upload fails
+            NetworkError: If network connectivity issues occur
         """
         if not file_paths:
-            raise ValueError("No files provided for upload")
+            raise ValidationError("No files provided for upload")
+
+        # Validate all file paths and formats
+        validated_paths = []
+        for file_path in file_paths:
+            try:
+                validated_path = validate_file_path(file_path)
+                validate_file_format(validated_path)
+                validated_paths.append(validated_path)
+            except ValidationError as e:
+                raise ValidationError(f"Invalid file '{file_path}': {e}")
+
+        file_paths = validated_paths
 
         # Step 1: Request batch upload URLs
         api_url = f"{self.API_BASE_URL}/file-urls/batch"
@@ -146,17 +196,21 @@ class MineruClient:
         try:
             response = requests.post(api_url, json=request_body, headers=headers, timeout=30)
             response.raise_for_status()
-        except requests.ConnectionError:
-            raise ConnectionError("Failed to connect to MinerU API. Please check your internet connection.")
-        except requests.Timeout:
-            raise TimeoutError("Request to MinerU API timed out. Please try again.")
+        except requests.ConnectionError as e:
+            raise NetworkError(f"Failed to connect to MinerU API. Please check your internet connection: {e}")
+        except requests.Timeout as e:
+            raise NetworkError(f"Request to MinerU API timed out. Please try again: {e}")
         except requests.HTTPError as e:
             if response.status_code == 401:
-                raise ValueError("Invalid API token. Please check your settings.")
+                raise AuthenticationError("Invalid API token. Please check your settings.")
             elif response.status_code == 403:
-                raise ValueError("Access forbidden. Please verify your API token permissions.")
+                raise AuthenticationError("Access forbidden. Please verify your API token permissions.")
             else:
-                raise Exception(f"API request failed with status {response.status_code}: {e}")
+                raise APIError(
+                    f"API request failed with status {response.status_code}",
+                    status_code=response.status_code,
+                    response_data=response.text
+                )
 
         response_data = response.json()
 
@@ -166,10 +220,10 @@ class MineruClient:
         file_urls = data.get("file_urls", [])
 
         if not batch_id or not file_urls:
-            raise ValueError("Invalid response from API: missing batch_id or file_urls")
+            raise APIError("Invalid response from API: missing batch_id or file_urls")
 
         if len(file_urls) != len(file_paths):
-            raise ValueError(f"URL count mismatch: got {len(file_urls)}, expected {len(file_paths)}")
+            raise APIError(f"URL count mismatch: got {len(file_urls)}, expected {len(file_paths)}")
 
         # Step 2: Upload files in parallel using ThreadPoolExecutor
         upload_results = []
@@ -180,7 +234,7 @@ class MineruClient:
             """Upload a single file to its presigned URL."""
             try:
                 if not upload_url:
-                    raise ValueError(f"No upload URL for file: {file_path}")
+                    raise UploadError(f"No upload URL for file: {file_path}")
 
                 # Upload file data
                 with open(file_path, 'rb') as f:
@@ -192,11 +246,17 @@ class MineruClient:
                     "status": "success"
                 }
 
-            except Exception as e:
+            except UploadError as e:
                 return {
                     "file": os.path.basename(file_path),
                     "status": "failed",
                     "error": str(e)
+                }
+            except Exception as e:
+                return {
+                    "file": os.path.basename(file_path),
+                    "status": "failed",
+                    "error": f"Upload failed: {str(e)}"
                 }
 
         # Use ThreadPoolExecutor for parallel uploads (max 5 concurrent uploads)
@@ -232,9 +292,14 @@ class MineruClient:
             dict: Status information for all files in the batch
 
         Raises:
-            ValueError: If API token is not configured
-            requests.RequestException: If API request fails
+            ValidationError: If batch_id is invalid
+            AuthenticationError: If API token is not configured
+            APIError: If API request fails
+            NetworkError: If network connectivity issues occur
         """
+        # Validate batch_id
+        batch_id = validate_batch_id(batch_id)
+
         api_url = f"{self.API_BASE_URL}/extract-results/batch/{batch_id}"
         headers = self.get_headers()
 
@@ -242,17 +307,21 @@ class MineruClient:
             response = requests.get(api_url, headers=headers, timeout=30)
             response.raise_for_status()
             return response.json()
-        except requests.ConnectionError:
-            raise ConnectionError("Failed to connect to MinerU API. Please check your internet connection.")
-        except requests.Timeout:
-            raise TimeoutError("Request to MinerU API timed out. Please try again.")
+        except requests.ConnectionError as e:
+            raise NetworkError(f"Failed to connect to MinerU API. Please check your internet connection: {e}")
+        except requests.Timeout as e:
+            raise NetworkError(f"Request to MinerU API timed out. Please try again: {e}")
         except requests.HTTPError as e:
             if response.status_code == 401:
-                raise ValueError("Invalid API token. Please check your settings.")
+                raise AuthenticationError("Invalid API token. Please check your settings.")
             elif response.status_code == 404:
-                raise ValueError(f"Batch ID {batch_id} not found.")
+                raise APIError(f"Batch ID {batch_id} not found.", status_code=404)
             else:
-                raise Exception(f"API request failed with status {response.status_code}: {e}")
+                raise APIError(
+                    f"API request failed with status {response.status_code}",
+                    status_code=response.status_code,
+                    response_data=response.text
+                )
 
     def download_result(self, zip_url: str, filename: str) -> str:
         """
@@ -266,10 +335,22 @@ class MineruClient:
             str: Path to the downloaded file
 
         Raises:
-            requests.RequestException: If download fails
+            ValidationError: If inputs are invalid
+            DownloadError: If download fails
+            NetworkError: If network connectivity issues occur
         """
+        # Validate inputs
+        if not zip_url or not isinstance(zip_url, str):
+            raise ValidationError("Download URL must be a non-empty string")
+
+        if not filename or not isinstance(filename, str):
+            raise ValidationError("Filename must be a non-empty string")
+
         # Ensure output directory exists
-        os.makedirs(self.output_directory, exist_ok=True)
+        try:
+            validate_directory_path(self.output_directory, create_if_missing=True)
+        except ValidationError as e:
+            raise DownloadError(f"Invalid output directory: {e}")
 
         # Create full output path
         output_path = os.path.join(self.output_directory, filename)
@@ -286,9 +367,11 @@ class MineruClient:
 
             return output_path
 
-        except requests.ConnectionError:
-            raise ConnectionError("Failed to download file. Please check your internet connection.")
-        except requests.Timeout:
-            raise TimeoutError("Download timed out. Please try again.")
+        except requests.ConnectionError as e:
+            raise NetworkError(f"Failed to download file. Please check your internet connection: {e}")
+        except requests.Timeout as e:
+            raise NetworkError(f"Download timed out. Please try again: {e}")
+        except IOError as e:
+            raise DownloadError(f"Failed to write file to disk: {e}")
         except Exception as e:
-            raise Exception(f"Failed to download file: {str(e)}")
+            raise DownloadError(f"Failed to download file: {str(e)}")
