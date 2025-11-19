@@ -336,15 +336,70 @@ A versão é definida centralmente em `version.py` e usada por toda a aplicaçã
 - Confirme que `https://mineru.net` está acessível
 - Verifique se há firewalls ou proxies bloqueando
 
+## Documentação
+
+O projeto inclui documentação detalhada na pasta `docs/`:
+
+### 📚 Documentação Disponível
+
+- **[API.md](docs/API.md)**: Documentação completa da API interna
+  - Referência de todas as classes e métodos públicos
+  - Exemplos de uso detalhados
+  - Estruturas de dados e códigos de erro
+  - Guias de uso completo
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Arquitetura do projeto
+  - Visão geral da estrutura
+  - Padrões de design utilizados
+  - Fluxo de dados e comunicação entre componentes
+
+- **[PATTERNS.md](docs/PATTERNS.md)**: Padrões e boas práticas
+  - Padrões de código recomendados
+  - Tratamento de erros
+  - Validação de entrada
+  - Logging e debugging
+
+- **[TESTING.md](docs/TESTING.md)**: Guia de testes
+  - Como executar os testes
+  - Estrutura de testes (unit, integration, UI)
+  - Cobertura de código
+  - Mocking e fixtures
+
+- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)**: Guia de contribuição
+  - Como contribuir para o projeto
+  - Padrões de código
+  - Processo de revisão de código
+  - Configuração do ambiente de desenvolvimento
+
+- **[I18N.md](docs/I18N.md)**: Internacionalização
+  - Suporte a múltiplos idiomas
+  - Como adicionar novos idiomas
+  - Localização da interface
+
+### 💡 Começando com a Documentação
+
+Para desenvolvedores que querem entender o código:
+1. Comece com [ARCHITECTURE.md](docs/ARCHITECTURE.md) para visão geral
+2. Consulte [API.md](docs/API.md) para detalhes de implementação
+3. Veja [PATTERNS.md](docs/PATTERNS.md) para boas práticas
+
+Para contribuidores:
+1. Leia [CONTRIBUTING.md](docs/CONTRIBUTING.md) primeiro
+2. Configure ambiente de desenvolvimento
+3. Consulte [TESTING.md](docs/TESTING.md) antes de fazer mudanças
+
 ## Contribuição
 
 Contribuições são bem-vindas! Por favor:
 
-1. Fork o repositório
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
-5. Abra um Pull Request
+1. Leia o **[Guia de Contribuição](docs/CONTRIBUTING.md)**
+2. Fork o repositório
+3. Crie uma branch para sua feature
+4. Siga os **[Padrões de Código](docs/PATTERNS.md)**
+5. Adicione **testes** (veja [TESTING.md](docs/TESTING.md))
+6. Commit suas mudanças
+7. Push para a branch
+8. Abra um Pull Request
 
 ## Licença
 

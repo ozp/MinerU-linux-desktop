@@ -1,7 +1,26 @@
-"""
-Settings Dialog for MinerU Desktop Client
+"""Settings Dialog for MinerU Desktop Client.
 
 Provides a configuration interface for API token (using keyring) and processing options.
+
+This module implements a Qt dialog for configuring:
+    - API authentication token (stored securely in system keyring)
+    - Output directory for downloaded results
+    - Processing options (OCR, formula recognition, table recognition)
+    - Model selection (Pipeline vs VLM)
+    - Language selection (for Pipeline model only)
+
+Security:
+    API tokens are stored using Linux Keyring, never in plaintext files.
+    Only non-sensitive settings are saved to config.ini.
+
+Example:
+    >>> from settings_dialog import SettingsDialog
+    >>> dialog = SettingsDialog(parent_window)
+    >>> if dialog.exec() == QDialog.Accepted:
+    ...     # Settings were saved, reload client config
+    ...     client.load_config()
+
+For detailed documentation, see docs/API.md#settingsdialog
 """
 
 import configparser
@@ -16,14 +35,45 @@ from PySide6.QtCore import Qt
 
 
 class SettingsDialog(QDialog):
-    """Dialog for configuring MinerU API settings."""
+    """Dialog for configuring MinerU API settings.
+
+    Provides a user-friendly interface for configuring all application settings
+    including secure API token storage, processing options, and output preferences.
+
+    Attributes:
+        CONFIG_FILE (str): Path to config file ("config.ini")
+        KEYRING_SERVICE (str): Service name for keyring ("MinerU")
+        KEYRING_USERNAME (str): Username for keyring ("api_token")
+
+    UI Components:
+        - API Token input (password field)
+        - Output directory selector (with browse button)
+        - Processing option checkboxes (OCR, formula, table)
+        - Model selection dropdown (Pipeline/VLM)
+        - Language selection dropdown (Pipeline only)
+        - Save/Cancel buttons
+
+    Example:
+        >>> dialog = SettingsDialog(main_window)
+        >>> result = dialog.exec()
+        >>> if result == QDialog.Accepted:
+        ...     print("Settings saved successfully")
+    """
 
     CONFIG_FILE = "config.ini"
     KEYRING_SERVICE = "MinerU"
     KEYRING_USERNAME = "api_token"
 
     def __init__(self, parent=None):
-        """Initialize the settings dialog."""
+        """Initialize the settings dialog.
+
+        Args:
+            parent: Parent widget (typically MainWindow). Optional.
+
+        Side Effects:
+            - Creates and sets up all UI components
+            - Loads current settings from keyring and config file
+        """
         super().__init__(parent)
         self.setup_ui()
         self.load_settings()
