@@ -53,3 +53,9 @@ appimagetool-x86_64.AppImage
 # AppImages should not be tracked in git
 # They should be uploaded to GitHub Releases only
 *.AppImage
+
+# Testing
+htmlcov/
+.pytest_cache/
+.coverage
+coverage.xml
