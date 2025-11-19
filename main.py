@@ -1,17 +1,18 @@
-"""MinerU Linux Desktop Client - Refactored Version.
+"""MinerU Linux Desktop Client - Main Entry Point.
 
 A desktop application for interacting with the MinerU API on Linux systems.
 This application provides a graphical user interface for uploading documents,
 monitoring processing status, and downloading processed results.
 
-This version has been refactored following SOLID principles and modern
-Python best practices, with proper separation of concerns, logging,
-type hints, and modular architecture.
+This version follows SOLID principles and modern Python best practices,
+with proper separation of concerns, comprehensive logging, type hints,
+and modular architecture.
 
 The main components include:
     - MainWindow: Primary application window (src/ui/main_window.py)
-    - MineruClient: API client for backend communication (mineru_client.py)
-    - SettingsDialog: Configuration interface (settings_dialog.py)
+    - MineruAPIClient: API client for backend communication (src/services/api_client.py)
+    - BatchService: Batch processing orchestration (src/services/batch_service.py)
+    - SettingsDialog: Configuration interface (src/ui/settings_dialog.py)
 
 Typical usage example:
     $ python main.py
@@ -24,18 +25,22 @@ The application will launch the GUI where users can:
 
 Architecture:
     The application follows a modular architecture with clear separation:
-    - UI Layer: PySide6-based interface components in src/ui/
-    - Business Logic: Processing coordinators in src/core/
-    - API Client: HTTP communication layer in mineru_client.py
-    - Utilities: Logging, validation, and helpers in src/utils/
+    - UI Layer: PySide6-based interface components (src/ui/)
+    - Services Layer: API client and batch processing logic (src/services/)
+    - Configuration: Centralized config and constants (src/config/)
+    - Models: Data structures for batches and options (src/models/)
+    - Workers: Async operations for upload and polling (src/workers/)
+    - Utilities: Logging configuration and helpers (src/utils/)
 
 Security:
     - API tokens stored securely using Linux Keyring
     - HTTPS-only communication with MinerU API
-    - Input validation using dedicated validators module
+    - No sensitive data logged or printed
+    - Input validation at all entry points
 
-For detailed API documentation, see docs/API.md
-For architecture details, see docs/ARCHITECTURE.md
+For detailed documentation, see:
+    - docs/API.md - API reference
+    - docs/ARCHITECTURE.md - Architecture overview
 """
 
 import sys
