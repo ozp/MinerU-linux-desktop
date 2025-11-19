@@ -1,8 +1,39 @@
-"""
-Input validators for MinerU Desktop Client.
+"""Input validators for MinerU Desktop Client.
 
 This module provides validation functions for various inputs including
-file paths, API tokens, and configuration values.
+file paths, API tokens, and configuration values. All validators raise
+ValidationError on invalid input.
+
+Validation Functions:
+    - validate_api_token: API token format and length
+    - validate_file_path: File existence and accessibility
+    - validate_directory_path: Directory existence (with optional creation)
+    - validate_file_format: Supported file formats (PDF, DOCX, etc.)
+    - validate_batch_id: Batch ID format
+    - validate_language_code: Language code (pt, en, ch)
+    - validate_model_version: Model version (pipeline, vlm)
+
+All validators follow a consistent pattern:
+    1. Accept input value
+    2. Validate against rules
+    3. Return sanitized value on success
+    4. Raise ValidationError on failure
+
+Example:
+    >>> from validators import validate_file_path, validate_api_token
+    >>> try:
+    ...     path = validate_file_path('/path/to/doc.pdf')
+    ...     token = validate_api_token('abc123...')
+    ... except ValidationError as e:
+    ...     print(f"Invalid input: {e}")
+
+Best Practices:
+    - Always validate user input before processing
+    - Use validators before making API calls
+    - Catch ValidationError to show user-friendly messages
+    - Validators are pure functions (no side effects except create_if_missing)
+
+For validation patterns, see docs/PATTERNS.md#input-validation
 """
 import os
 import re
