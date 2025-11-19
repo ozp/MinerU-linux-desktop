@@ -17,9 +17,25 @@ a = Analysis(
         'PySide6.QtGui',
         'PySide6.QtWidgets',
 
-        # Application modules
-        'settings_dialog',
-        'mineru_client',
+        # Application modules from src/
+        'src',
+        'src.ui',
+        'src.ui.main_window',
+        'src.ui.settings_dialog',
+        'src.services',
+        'src.services.api_client',
+        'src.services.batch_service',
+        'src.config',
+        'src.config.config_manager',
+        'src.config.constants',
+        'src.models',
+        'src.models.batch',
+        'src.models.processing_options',
+        'src.workers',
+        'src.workers.upload_worker',
+        'src.workers.polling_worker',
+        'src.utils',
+        'src.utils.logging_config',
 
         # Keyring backends for secure token storage
         'keyring.backends.SecretService',
