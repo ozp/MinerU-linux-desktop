@@ -1,9 +1,29 @@
-"""
-MinerU API Client Module
+"""MinerU API Client Module.
 
 This module provides the MineruClient class for interacting with the MinerU API.
-Handles all API operations including authentication, file upload, status checking,
-and result downloads.
+It handles all API operations including:
+    - Secure authentication via bearer token
+    - Batch file uploads with parallel processing
+    - Processing status monitoring
+    - Automated result downloads
+
+The client uses ThreadPoolExecutor for efficient parallel uploads (up to 5 concurrent)
+and implements robust error handling for network issues.
+
+Configuration:
+    Settings are loaded from two sources:
+        - API token: Stored securely in Linux Keyring
+        - Other settings: Stored in config.ini
+
+Example:
+    client = MineruClient()
+    result = client.upload_batch(['file1.pdf', 'file2.pdf'])
+    batch_id = result['batch_id']
+
+    status = client.get_batch_status(batch_id)
+    if status['data']['extract_result'][0]['state'] == 'done':
+        zip_url = status['data']['extract_result'][0]['full_zip_url']
+        client.download_result(zip_url, 'result.zip')
 """
 
 import configparser
@@ -15,11 +35,29 @@ from typing import List, Dict, Optional, Callable
 
 
 class MineruClient:
-    """
-    Client for interacting with the MinerU API.
+    """Client for interacting with the MinerU API.
 
     This class handles all communication with the MinerU service,
     including file uploads, processing status checks, and result downloads.
+
+    The client implements:
+        - Secure token-based authentication
+        - Parallel file uploads (up to 5 concurrent)
+        - Comprehensive error handling
+        - Automatic configuration loading
+
+    Attributes:
+        CONFIG_FILE (str): Path to configuration file
+        KEYRING_SERVICE (str): Service name for keyring storage
+        KEYRING_USERNAME (str): Username for keyring storage
+        API_BASE_URL (str): Base URL for MinerU API
+        api_token (Optional[str]): Bearer token for API authentication
+        is_ocr (bool): Enable OCR for all documents
+        enable_formula (bool): Enable formula recognition
+        enable_table (bool): Enable table recognition
+        language (str): OCR language code (pt, en, ch)
+        model_version (str): Processing model (pipeline or vlm)
+        output_directory (str): Path for downloaded results
     """
 
     CONFIG_FILE = "config.ini"
@@ -28,7 +66,11 @@ class MineruClient:
     API_BASE_URL = "https://mineru.net/api/v4"
 
     def __init__(self):
-        """Initialize the MinerU client."""
+        """Initialize the MinerU client with default configuration.
+
+        Loads configuration from keyring and config file. Sets default values
+        for processing options if no configuration exists.
+        """
         self.api_token = None
         self.is_ocr = True
         self.enable_formula = False
@@ -39,7 +81,20 @@ class MineruClient:
         self.load_config()
 
     def load_config(self):
-        """Load configuration from keyring and config file."""
+        """Load configuration from keyring and config file.
+
+        Retrieves API token from system keyring and loads processing options
+        from config.ini. Uses default values if configuration doesn't exist.
+
+        Configuration loaded:
+            - api_token: From keyring (secure)
+            - is_ocr: Force OCR flag
+            - enable_formula: Formula recognition flag
+            - enable_table: Table recognition flag
+            - language: OCR language (pt, en, ch)
+            - model_version: Processing model (pipeline or vlm)
+            - output_directory: Path for downloaded results
+        """
         # Load token from keyring (secure storage)
         try:
             self.api_token = keyring.get_password(self.KEYRING_SERVICE, self.KEYRING_USERNAME)

@@ -251,28 +251,55 @@ A aplicação inclui tratamento robusto de erros para:
 
 Todas as mensagens de erro são exibidas de forma amigável ao usuário.
 
+## Documentação
+
+### Documentação Técnica Completa
+
+O projeto inclui documentação técnica abrangente:
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Arquitetura do sistema e decisões de design
+- **[API.md](docs/API.md)** - Documentação completa da API interna
+- **[TESTING.md](docs/TESTING.md)** - Guia de testes e como executá-los
+- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Como contribuir com o projeto
+- **[PATTERNS.md](docs/PATTERNS.md)** - Padrões de código e melhores práticas
+- **[I18N.md](docs/I18N.md)** - Sistema de internacionalização
+
+### Documentação de Processo
+
+- **[RELEASE_PROCESS.md](RELEASE_PROCESS.md)** - Processo de release
+- **[BUILD.md](BUILD.md)** - Como fazer build do AppImage
+- **[WORKFLOW.md](WORKFLOW.md)** - Workflow de desenvolvimento
+- **[SYSTEM_DEPENDENCIES.md](SYSTEM_DEPENDENCIES.md)** - Dependências do sistema
+
 ## Desenvolvimento
 
 ### Estrutura do Projeto
 
 ```
 MinerU-linux-desktop/
-├── main.py                 # Aplicação principal
-├── settings_dialog.py      # Diálogo de configurações
-├── mineru_client.py        # Cliente da API
-├── version.py              # Informações de versão
-├── requirements.txt        # Dependências Python
-├── config.ini.example      # Exemplo de configuração
-├── build_appimage.sh       # Script de build do AppImage
-├── release.sh              # Script de release automatizado
-├── install_system_deps.sh  # Instalador de dependências do sistema
-├── .gitignore             # Arquivos ignorados pelo git
-├── README.md              # Esta documentação
-├── RELEASE_PROCESS.md     # Documentação do processo de release
-├── CHANGELOG.md           # Histórico de mudanças
-├── BUILD.md               # Guia de build
-├── WORKFLOW.md            # Workflow de desenvolvimento
-└── SYSTEM_DEPENDENCIES.md # Documentação de dependências
+├── docs/                       # Documentação técnica
+│   ├── ARCHITECTURE.md        # Arquitetura do sistema
+│   ├── API.md                 # Documentação da API
+│   ├── TESTING.md             # Guia de testes
+│   ├── CONTRIBUTING.md        # Guia de contribuição
+│   ├── PATTERNS.md            # Padrões de código
+│   └── I18N.md                # Internacionalização
+├── main.py                    # Aplicação principal
+├── settings_dialog.py         # Diálogo de configurações
+├── mineru_client.py           # Cliente da API
+├── version.py                 # Informações de versão
+├── requirements.txt           # Dependências Python
+├── config.ini.example         # Exemplo de configuração
+├── build_appimage.sh          # Script de build do AppImage
+├── release.sh                 # Script de release automatizado
+├── install_system_deps.sh     # Instalador de dependências do sistema
+├── .gitignore                # Arquivos ignorados pelo git
+├── README.md                 # Esta documentação
+├── RELEASE_PROCESS.md        # Documentação do processo de release
+├── CHANGELOG.md              # Histórico de mudanças
+├── BUILD.md                  # Guia de build
+├── WORKFLOW.md               # Workflow de desenvolvimento
+└── SYSTEM_DEPENDENCIES.md    # Documentação de dependências
 ```
 
 ### Dependências
@@ -280,6 +307,8 @@ MinerU-linux-desktop/
 - **PySide6**: Framework de GUI Qt para Python
 - **requests**: Cliente HTTP para chamadas de API
 - **keyring**: Armazenamento seguro de credenciais
+
+Veja [ARCHITECTURE.md](docs/ARCHITECTURE.md) para detalhes sobre decisões arquiteturais.
 
 ### Sistema de Release Automatizado
 
@@ -338,13 +367,26 @@ A versão é definida centralmente em `version.py` e usada por toda a aplicaçã
 
 ## Contribuição
 
-Contribuições são bem-vindas! Por favor:
+Contribuições são bem-vindas!
+
+**Leia o [Guia de Contribuição](docs/CONTRIBUTING.md)** para detalhes completos sobre:
+- Como configurar o ambiente de desenvolvimento
+- Padrões de código a seguir
+- Processo de pull request
+- Como reportar bugs
+- Como sugerir melhorias
+
+### Processo Rápido
 
 1. Fork o repositório
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
+2. Crie uma branch para sua feature (`git checkout -b feature/minha-feature`)
+3. Commit suas mudanças (`git commit -m 'feat: adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/minha-feature`)
 5. Abra um Pull Request
+
+Veja também:
+- [PATTERNS.md](docs/PATTERNS.md) - Padrões de código
+- [TESTING.md](docs/TESTING.md) - Como escrever e rodar testes
 
 ## Licença
 

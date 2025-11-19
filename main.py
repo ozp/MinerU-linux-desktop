@@ -1,9 +1,21 @@
-"""
-MinerU Linux Desktop Client
+"""MinerU Linux Desktop Client.
 
 A desktop application for interacting with the MinerU API on Linux systems.
-This app allows users to upload documents, monitor processing status,
-and download processed results.
+This application provides a graphical user interface for uploading documents,
+monitoring processing status, and downloading processed results.
+
+The main components include:
+    - MainWindow: Primary application window with file selection and processing controls
+    - UploadWorker: Background thread worker for non-blocking file uploads
+
+Typical usage example:
+    $ python main.py
+
+The application will launch the GUI where users can:
+    1. Configure API settings (File > Settings)
+    2. Add files for processing
+    3. Start batch processing
+    4. Monitor progress and download results
 """
 
 import sys
@@ -22,19 +34,46 @@ from version import VERSION, VERSION_STRING
 
 
 class UploadWorker(QThread):
-    """Worker thread for uploading files to MinerU API."""
+    """Worker thread for uploading files to MinerU API without blocking the UI.
+
+    This QThread subclass handles file uploads in the background, emitting signals
+    to update the main window about progress and completion status.
+
+    Attributes:
+        mineru_client (MineruClient): Client instance for API communication
+        file_paths (List[str]): List of file paths to upload
+        progress_updated (Signal[int]): Emitted when upload progress changes (0-100)
+        upload_completed (Signal[dict]): Emitted when upload succeeds with result data
+        upload_failed (Signal[str]): Emitted when upload fails with error message
+    """
 
     progress_updated = Signal(int)
     upload_completed = Signal(dict)
     upload_failed = Signal(str)
 
     def __init__(self, mineru_client, file_paths):
+        """Initialize the upload worker.
+
+        Args:
+            mineru_client (MineruClient): Client instance for API operations
+            file_paths (List[str]): List of local file paths to upload
+        """
         super().__init__()
         self.mineru_client = mineru_client
         self.file_paths = file_paths
 
     def run(self):
-        """Execute the upload in a separate thread."""
+        """Execute the upload operation in a separate thread.
+
+        This method runs in the background and communicates with the main thread
+        via signals. It handles exceptions and emits appropriate signals based on
+        the upload outcome.
+
+        Emits:
+            progress_updated: During upload with progress percentage
+            upload_completed: On success with result dictionary
+            upload_failed: On error with error message string
+        """
         try:
             def progress_callback(progress):
                 self.progress_updated.emit(progress)
@@ -46,10 +85,33 @@ class UploadWorker(QThread):
 
 
 class MainWindow(QMainWindow):
-    """Main application window for MinerU Desktop Client."""
+    """Main application window for MinerU Desktop Client.
+
+    This class implements the primary user interface for the application, providing
+    controls for file selection, batch processing, progress monitoring, and result
+    management. It coordinates with the MineruClient for API operations and manages
+    background upload workers.
+
+    Attributes:
+        selected_files (List[str]): Currently selected file paths for processing
+        current_batch_id (Optional[str]): ID of the current processing batch
+        mineru_client (MineruClient): API client instance
+        upload_worker (Optional[UploadWorker]): Background worker for uploads
+        polling_timer (Optional[QTimer]): Timer for automatic status polling
+        file_status_map (Dict[str, str]): Maps filenames to their processing status
+        file_list (QListWidget): Widget displaying selected files
+        process_button (QPushButton): Button to start processing
+        add_files_button (QPushButton): Button to add files
+        open_folder_button (QPushButton): Button to open output directory
+        progress_bar (QProgressBar): Upload progress indicator
+    """
 
     def __init__(self):
-        """Initialize the main window."""
+        """Initialize the main window and its components.
+
+        Sets up the UI, initializes the API client, and prepares internal state
+        for file processing operations.
+        """
         super().__init__()
         self.selected_files = []
         self.current_batch_id = None
@@ -60,7 +122,12 @@ class MainWindow(QMainWindow):
         self.setup_ui()
 
     def setup_ui(self):
-        """Set up the user interface."""
+        """Set up the user interface components.
+
+        Creates and arranges all UI elements including menu bar, file selection
+        controls, progress indicators, and processing buttons. Configures layout
+        and connects signals to appropriate handlers.
+        """
         self.setWindowTitle(f"MinerU Desktop Client v{VERSION}")
         self.setMinimumSize(800, 650)
 
@@ -131,7 +198,11 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def create_menu_bar(self):
-        """Create the application menu bar."""
+        """Create the application menu bar with File and Help menus.
+
+        Sets up menu items for Settings, Exit, and About dialog.
+        Includes keyboard shortcuts for common actions.
+        """
         menubar = self.menuBar()
 
         # File menu
@@ -159,14 +230,21 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_action)
 
     def open_settings(self):
-        """Open the settings dialog."""
+        """Open the settings dialog for API and processing configuration.
+
+        Displays the SettingsDialog and reloads the client configuration if
+        settings are saved successfully.
+        """
         dialog = SettingsDialog(self)
         if dialog.exec():
             # Reload client config after settings change
             self.mineru_client.load_config()
 
     def show_about(self):
-        """Show the about dialog with version information."""
+        """Show the about dialog with version and feature information.
+
+        Displays application name, version, key features, and repository link.
+        """
         QMessageBox.about(
             self,
             "Sobre o MinerU Desktop Client",
@@ -183,7 +261,12 @@ class MainWindow(QMainWindow):
         )
 
     def add_files(self):
-        """Open file dialog to select files for processing."""
+        """Open file dialog to select files for processing.
+
+        Allows multi-file selection with filters for supported document types
+        (PDF, DOCX, PPTX) and images (JPG, PNG). Prevents duplicate additions
+        and updates the file list widget with selected files.
+        """
         file_dialog = QFileDialog(self)
         file_dialog.setFileMode(QFileDialog.ExistingFiles)
         file_dialog.setNameFilter(
@@ -206,7 +289,12 @@ class MainWindow(QMainWindow):
             self.process_button.setEnabled(len(self.selected_files) > 0)
 
     def remove_selected_files(self):
-        """Remove selected files from the list."""
+        """Remove selected files from the processing list.
+
+        Removes all currently selected items from the file list widget and
+        updates internal tracking structures. Disables the process button
+        if no files remain.
+        """
         selected_items = self.file_list.selectedItems()
         if not selected_items:
             return
@@ -224,7 +312,12 @@ class MainWindow(QMainWindow):
         self.process_button.setEnabled(len(self.selected_files) > 0)
 
     def start_processing(self):
-        """Start processing the selected files."""
+        """Start processing the selected files via background upload.
+
+        Initiates a background UploadWorker thread to upload files to the API
+        without blocking the UI. Displays progress bar and disables controls
+        during upload. Shows warning if no files are selected.
+        """
         if not self.selected_files:
             QMessageBox.warning(
                 self,
@@ -247,11 +340,23 @@ class MainWindow(QMainWindow):
         self.upload_worker.start()
 
     def on_upload_progress(self, progress):
-        """Update progress bar during upload."""
+        """Update progress bar during upload.
+
+        Args:
+            progress (int): Upload progress percentage (0-100)
+        """
         self.progress_bar.setValue(progress)
 
     def on_upload_completed(self, result):
-        """Handle successful upload completion."""
+        """Handle successful upload completion and initiate status polling.
+
+        Updates file statuses in the UI, displays success/failure counts,
+        and starts automatic polling for processing status if any files
+        uploaded successfully.
+
+        Args:
+            result (dict): Upload result containing 'batch_id' and 'uploads' list
+        """
         # Store batch ID
         self.current_batch_id = result.get("batch_id")
 
@@ -304,7 +409,13 @@ class MainWindow(QMainWindow):
         self.progress_bar.setVisible(False)
 
     def on_upload_failed(self, error_message):
-        """Handle upload failure."""
+        """Handle upload failure with user notification.
+
+        Displays error dialog and re-enables UI controls.
+
+        Args:
+            error_message (str): Description of the upload error
+        """
         QMessageBox.critical(
             self,
             "Erro no Upload",
@@ -317,7 +428,12 @@ class MainWindow(QMainWindow):
         self.progress_bar.setVisible(False)
 
     def start_polling(self):
-        """Start automatic polling for batch status."""
+        """Start automatic polling for batch processing status.
+
+        Creates a QTimer that checks batch status every 10 seconds.
+        Performs an immediate status check on start. Properly cleans up
+        any existing timer before creating a new one.
+        """
         if not self.current_batch_id:
             return
 
@@ -341,7 +457,16 @@ class MainWindow(QMainWindow):
         self.check_batch_status()
 
     def check_batch_status(self):
-        """Check the status of the current batch and download completed files."""
+        """Check the status of the current batch and download completed files.
+
+        Queries the API for current batch status, updates file statuses in the UI,
+        and automatically downloads and extracts completed results. Continues polling
+        until all files reach a final state (completed/failed). Handles various file
+        states: pending, processing, done, and failed.
+
+        The method also enables the "Open Folder" button when at least one file
+        completes successfully.
+        """
         if not self.current_batch_id:
             return
 
@@ -470,7 +595,12 @@ class MainWindow(QMainWindow):
             # Continue polling even if there's an error
 
     def update_file_status(self, filename, status):
-        """Update the status of a file in the list."""
+        """Update the status of a file in the list widget.
+
+        Args:
+            filename (str): Name of the file to update
+            status (str): New status text to display
+        """
         for i in range(self.file_list.count()):
             item = self.file_list.item(i)
             file_path = item.data(Qt.UserRole)
@@ -479,7 +609,11 @@ class MainWindow(QMainWindow):
                 break
 
     def open_output_folder(self):
-        """Open the output directory in the file manager."""
+        """Open the output directory in the system file manager.
+
+        Uses QDesktopServices to open the configured output directory.
+        Shows a warning if the directory doesn't exist.
+        """
         output_dir = self.mineru_client.output_directory
         if os.path.exists(output_dir):
             QDesktopServices.openUrl(QUrl.fromLocalFile(output_dir))
@@ -491,7 +625,14 @@ class MainWindow(QMainWindow):
             )
 
     def closeEvent(self, event):
-        """Handle application close event."""
+        """Handle application close event with proper cleanup.
+
+        Stops any active polling timer and waits for the upload worker thread
+        to complete before closing.
+
+        Args:
+            event (QCloseEvent): The close event to accept or reject
+        """
         # Stop polling timer if running
         if self.polling_timer:
             if self.polling_timer.isActive():
@@ -511,7 +652,14 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    """Application entry point."""
+    """Application entry point.
+
+    Creates the QApplication instance, initializes and shows the main window,
+    and starts the Qt event loop.
+
+    Returns:
+        int: Application exit code
+    """
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()

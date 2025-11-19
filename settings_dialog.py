@@ -1,7 +1,22 @@
-"""
-Settings Dialog for MinerU Desktop Client
+"""Settings Dialog for MinerU Desktop Client.
 
-Provides a configuration interface for API token (using keyring) and processing options.
+This module provides a configuration interface for managing API credentials
+and processing options. The dialog handles:
+    - Secure API token storage using Linux Keyring
+    - Output directory selection
+    - Processing options (OCR, formula recognition, table recognition)
+    - Model selection (Pipeline vs VLM)
+    - OCR language configuration
+
+Security:
+    API tokens are stored securely in the system keyring, never in plain text files.
+    Other non-sensitive settings are persisted to config.ini.
+
+Example:
+    dialog = SettingsDialog(parent_window)
+    if dialog.exec():
+        # Settings saved successfully
+        client.load_config()
 """
 
 import configparser
@@ -16,20 +31,52 @@ from PySide6.QtCore import Qt
 
 
 class SettingsDialog(QDialog):
-    """Dialog for configuring MinerU API settings."""
+    """Dialog for configuring MinerU API settings and processing options.
+
+    This dialog provides a user interface for:
+        - API token configuration (stored securely in keyring)
+        - Output directory selection
+        - Processing options configuration
+        - Model and language selection
+
+    Attributes:
+        CONFIG_FILE (str): Path to the configuration file
+        KEYRING_SERVICE (str): Service name for keyring storage
+        KEYRING_USERNAME (str): Username key for keyring storage
+        token_input (QLineEdit): Input field for API token
+        output_path_input (QLineEdit): Input field for output directory
+        force_ocr_checkbox (QCheckBox): OCR enable/disable checkbox
+        enable_formula_checkbox (QCheckBox): Formula recognition checkbox
+        enable_table_checkbox (QCheckBox): Table recognition checkbox
+        model_combo (QComboBox): Model selection dropdown
+        language_combo (QComboBox): Language selection dropdown
+        language_label (QLabel): Label for language selection
+        language_help (QLabel): Help text for language options
+        select_folder_button (QPushButton): Button to browse for output folder
+        save_button (QPushButton): Button to save settings
+    """
 
     CONFIG_FILE = "config.ini"
     KEYRING_SERVICE = "MinerU"
     KEYRING_USERNAME = "api_token"
 
     def __init__(self, parent=None):
-        """Initialize the settings dialog."""
+        """Initialize the settings dialog.
+
+        Args:
+            parent (QWidget, optional): Parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.setup_ui()
         self.load_settings()
 
     def setup_ui(self):
-        """Set up the user interface."""
+        """Set up the user interface components.
+
+        Creates and arranges all UI elements including API token input,
+        output directory selector, processing options checkboxes, and
+        model/language selection dropdowns.
+        """
         self.setWindowTitle("Settings")
         self.setMinimumWidth(550)
 
@@ -145,7 +192,11 @@ class SettingsDialog(QDialog):
         self.setLayout(layout)
 
     def select_output_folder(self):
-        """Open file dialog to select output directory."""
+        """Open file dialog to select output directory.
+
+        Opens a directory selection dialog and updates the output path
+        input field with the selected directory.
+        """
         current_dir = self.output_path_input.text() or os.path.expanduser("~/Documents")
         folder = QFileDialog.getExistingDirectory(
             self,
@@ -156,7 +207,12 @@ class SettingsDialog(QDialog):
             self.output_path_input.setText(folder)
 
     def on_model_changed(self):
-        """Handle model selection change to enable/disable language settings."""
+        """Handle model selection change to enable/disable language settings.
+
+        The Pipeline model supports language configuration, while VLM does not.
+        This method enables/disables the language selector based on the chosen model
+        and adjusts the warning message styling.
+        """
         is_pipeline = self.model_combo.currentData() == "pipeline"
         self.language_label.setEnabled(is_pipeline)
         self.language_combo.setEnabled(is_pipeline)
@@ -167,7 +223,19 @@ class SettingsDialog(QDialog):
             self.language_help.setStyleSheet("color: #FF6B6B; font-size: 10px; font-style: italic;")
 
     def load_settings(self):
-        """Load settings from keyring and config file."""
+        """Load settings from keyring and config file.
+
+        Retrieves the API token from system keyring and loads non-sensitive
+        settings from config.ini. Sets default values if no configuration exists.
+
+        Defaults:
+            - Output directory: ~/Documents/MinerU_Output
+            - Force OCR: True
+            - Enable formula: False
+            - Enable table: True
+            - Language: Portuguese (pt)
+            - Model: Pipeline
+        """
         # Load token from keyring (secure storage)
         try:
             token = keyring.get_password(self.KEYRING_SERVICE, self.KEYRING_USERNAME)
@@ -229,7 +297,19 @@ class SettingsDialog(QDialog):
             self.on_model_changed()
 
     def save_settings(self):
-        """Save settings to keyring and config file."""
+        """Save settings to keyring and config file.
+
+        Validates all inputs, saves the API token to system keyring,
+        creates the output directory if needed, and writes non-sensitive
+        settings to config.ini.
+
+        Validation:
+            - API token must not be empty
+            - Output directory must be specified
+            - Output directory is created if it doesn't exist
+
+        Shows success or error message dialog based on outcome.
+        """
         try:
             # Save token to keyring (secure storage)
             token = self.token_input.text().strip()
