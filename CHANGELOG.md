@@ -5,6 +5,46 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.1.0] - 2025-11-21
+
+### Refatoração Major
+- **Consolidação completa da base de código**: Eliminadas 3 implementações duplicadas
+- Removidas ~4.000 linhas de código duplicado (redução de 90%)
+- Estrutura unificada em `src/` com arquitetura modular
+- Código antigo movido para `old_code/` (backup)
+
+### Mudanças Técnicas
+- Entry point único: `main.py` (importa de `src/`)
+- Build configuration (`MinerU.spec`) atualizado para módulos `src/`
+- Logging já implementado corretamente (sem print statements)
+- Configuração centralizada em `src/config/constants.py`
+- Documentação atualizada para refletir arquitetura atual
+
+### Arquivos Consolidados
+- `mineru_client.py` (679 linhas) → `src/services/api_client.py`
+- `settings_dialog.py` (341 linhas) → `src/ui/settings_dialog.py`
+- `validators.py` (254 linhas) → validação em `src/`
+- `exceptions.py` (123 linhas) → exceções em `src/services/`
+- Diretório `mineru_desktop/` removido (implementação alternativa)
+- `run.py` removido (obsoleto)
+
+### Arquitetura Final
+```
+src/
+├── config/        # Configuração centralizada
+├── services/      # API client e batch service
+├── ui/            # Interface Qt (MainWindow, SettingsDialog)
+├── workers/       # Upload e polling workers
+├── models/        # Modelos de dados
+└── utils/         # Logging e utilitários
+```
+
+### Compatibilidade
+- ✅ Funcionalidades mantidas 100%
+- ✅ Interface de usuário inalterada
+- ✅ Configurações existentes compatíveis
+- ✅ AppImage build compatível
+
 ## [1.0.1] - 2025-11-18
 
 ### Correções
@@ -56,4 +96,6 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **MINOR**: Novas funcionalidades de forma compatível
 - **PATCH**: Correções de bugs compatíveis
 
+[1.1.0]: https://github.com/ozp/MinerU-linux-desktop/releases/tag/v1.1.0
+[1.0.1]: https://github.com/ozp/MinerU-linux-desktop/releases/tag/v1.0.1
 [1.0.0]: https://github.com/ozp/MinerU-linux-desktop/releases/tag/v1.0.0
