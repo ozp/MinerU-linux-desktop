@@ -10,6 +10,7 @@ a = Analysis(
     datas=[
         ('config.ini.example', '.'),
         ('mineru_icon.svg', '.'),
+        ('src/ui/styles/*.qss', 'src/ui/styles'),
     ],
     hiddenimports=[
         # PySide6 core modules

@@ -11,7 +11,7 @@ Versioning follows Semantic Versioning (semver.org):
 """
 
 # Application version
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 # Version components
 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH = VERSION.split(".")

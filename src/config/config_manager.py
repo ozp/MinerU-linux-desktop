@@ -217,6 +217,59 @@ class ConfigManager:
             logger.error(f"Failed to create output directory: {e}")
             raise
 
+    def get_theme_preference(self) -> str:
+        """
+        Get theme preference from config.
+
+        Returns:
+            Theme name ("light" or "dark")
+        """
+        config_file = CONFIG_FILE
+
+        if not os.path.exists(config_file):
+            return "light"
+
+        try:
+            config = configparser.ConfigParser()
+            config.read(config_file)
+
+            if "UI" in config:
+                theme = config["UI"].get("theme", "light")
+                logger.debug(f"Loaded theme preference: {theme}")
+                return theme
+        except Exception as e:
+            logger.error(f"Error loading theme preference: {e}")
+
+        return "light"
+
+    def save_theme_preference(self, theme: str) -> None:
+        """
+        Save theme preference to config.
+
+        Args:
+            theme: Theme name ("light" or "dark")
+        """
+        config_file = CONFIG_FILE
+
+        try:
+            config = configparser.ConfigParser()
+
+            if os.path.exists(config_file):
+                config.read(config_file)
+
+            if "UI" not in config:
+                config["UI"] = {}
+
+            config["UI"]["theme"] = theme
+
+            with open(config_file, "w") as configfile:
+                config.write(configfile)
+
+            logger.info(f"Theme preference saved: {theme}")
+
+        except Exception as e:
+            logger.error(f"Failed to save theme preference: {e}")
+
 
 # Singleton instance getter
 def get_config() -> ConfigManager:

@@ -6,16 +6,20 @@ SOLID-compliant architecture that separates UI from business logic.
 """
 
 import os
+import sys
 from typing import Optional
+from datetime import datetime
+from pathlib import Path
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QHBoxLayout, QPushButton, QListWidget, QFileDialog,
     QMessageBox, QGroupBox, QListWidgetItem, QProgressBar
 )
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import Qt, QUrl, QTimer
 from PySide6.QtGui import QAction, QDesktopServices
 
 from .settings_dialog import SettingsDialog
+from .toast_notification import ToastNotification, ToastType
 from ..services.batch_service import BatchService
 from ..workers.upload_worker import UploadWorker
 from ..workers.polling_worker import PollingWorker
@@ -27,6 +31,46 @@ from version import VERSION
 
 
 logger = get_logger(__name__)
+
+
+class DragDropListWidget(QListWidget):
+    """List widget with drag and drop support for files."""
+
+    def __init__(self, parent=None):
+        """Initialize the drag-drop list widget."""
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QListWidget.DragOnly)
+        logger.debug("DragDropListWidget initialized")
+
+    def dragEnterEvent(self, event):
+        """Handle drag enter events."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+            logger.debug("Drag enter accepted")
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        """Handle drag move events."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        """Handle drop events."""
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            file_paths = [url.toLocalFile() for url in urls if url.isLocalFile()]
+            if file_paths:
+                logger.info(f"Files dropped: {len(file_paths)}")
+                # Emit signal to parent
+                if hasattr(self.parent(), 'add_files_from_paths'):
+                    self.parent().add_files_from_paths(file_paths)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
 
 class MainWindow(QMainWindow):
@@ -50,7 +94,15 @@ class MainWindow(QMainWindow):
         self.upload_worker: Optional[UploadWorker] = None
         self.polling_worker: Optional[PollingWorker] = None
 
+        # Theme state
+        self.current_theme = "light"
+
         self.setup_ui()
+
+        # Apply theme from config
+        saved_theme = self.config.get_theme_preference() if hasattr(self.config, 'get_theme_preference') else "light"
+        self.apply_theme(saved_theme)
+
         logger.info("Main window initialized")
 
     def setup_ui(self) -> None:
@@ -99,6 +151,14 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
+        # View menu
+        view_menu = menubar.addMenu("&Visualizar")
+
+        # Theme toggle action
+        self.theme_action = QAction("🌙 Tema Escuro", self)
+        self.theme_action.triggered.connect(self.toggle_theme)
+        view_menu.addAction(self.theme_action)
+
         # Help menu
         help_menu = menubar.addMenu("&Ajuda")
 
@@ -119,20 +179,21 @@ class MainWindow(QMainWindow):
 
         # Add files button
         button_layout = QHBoxLayout()
-        self.add_files_button = QPushButton("Adicionar Arquivos...")
+        self.add_files_button = QPushButton("📁 Adicionar Arquivos...")
         self.add_files_button.clicked.connect(self._add_files)
         button_layout.addWidget(self.add_files_button)
         button_layout.addStretch()
 
         file_layout.addLayout(button_layout)
 
-        # File list
-        self.file_list = QListWidget()
+        # File list with drag & drop
+        self.file_list = DragDropListWidget(self)
         self.file_list.setSelectionMode(QListWidget.ExtendedSelection)
         file_layout.addWidget(self.file_list)
 
         # Remove selected files button
-        remove_button = QPushButton("Remover Selecionados")
+        remove_button = QPushButton("🗑️ Remover Selecionados")
+        remove_button.setObjectName("dangerButton")
         remove_button.clicked.connect(self._remove_selected_files)
         file_layout.addWidget(remove_button)
 
@@ -153,13 +214,14 @@ class MainWindow(QMainWindow):
         buttons_row = QHBoxLayout()
 
         # Start processing button
-        self.process_button = QPushButton("Iniciar Processamento")
+        self.process_button = QPushButton("▶️ Iniciar Processamento")
         self.process_button.clicked.connect(self._start_processing)
         self.process_button.setEnabled(False)
         buttons_row.addWidget(self.process_button)
 
         # Open folder button
-        self.open_folder_button = QPushButton("Abrir Pasta de Saída")
+        self.open_folder_button = QPushButton("📂 Abrir Pasta de Saída")
+        self.open_folder_button.setObjectName("secondaryButton")
         self.open_folder_button.clicked.connect(self._open_output_folder)
         self.open_folder_button.setEnabled(False)
         buttons_row.addWidget(self.open_folder_button)
@@ -178,6 +240,55 @@ class MainWindow(QMainWindow):
             # Reload configuration after settings change
             self.config.load()
             logger.info("Configuration reloaded after settings change")
+
+    def toggle_theme(self) -> None:
+        """Toggle between light and dark theme."""
+        new_theme = "dark" if self.current_theme == "light" else "light"
+        self.apply_theme(new_theme)
+
+        # Save preference
+        if hasattr(self.config, 'save_theme_preference'):
+            self.config.save_theme_preference(new_theme)
+
+        logger.info(f"Theme changed to: {new_theme}")
+
+    def apply_theme(self, theme: str) -> None:
+        """
+        Apply a theme to the application.
+
+        Args:
+            theme: Theme name ("light" or "dark")
+        """
+        self.current_theme = theme
+
+        # Get stylesheet path
+        if hasattr(sys, '_MEIPASS'):
+            # Running as PyInstaller bundle
+            base_path = Path(sys._MEIPASS)
+        else:
+            base_path = Path(__file__).parent
+
+        stylesheet_path = base_path / "styles" / f"{theme}_theme.qss"
+
+        # Load and apply stylesheet
+        try:
+            with open(stylesheet_path, "r") as f:
+                stylesheet = f.read()
+                self.setStyleSheet(stylesheet)
+
+            # Update theme action text
+            if hasattr(self, 'theme_action'):
+                if theme == "light":
+                    self.theme_action.setText("🌙 Tema Escuro")
+                else:
+                    self.theme_action.setText("☀️ Tema Claro")
+
+            logger.info(f"Applied {theme} theme")
+
+        except Exception as e:
+            logger.error(f"Failed to load theme '{theme}': {e}")
+            # Fallback to default
+            self.setStyleSheet("")
 
     def _show_about(self) -> None:
         """Show the about dialog with version information."""
@@ -220,6 +331,35 @@ class MainWindow(QMainWindow):
 
             logger.info(f"Added {len(files)} files to batch")
 
+    def add_files_from_paths(self, file_paths: list) -> None:
+        """
+        Add files from a list of paths (for drag & drop support).
+
+        Args:
+            file_paths: List of file paths to add
+        """
+        if not self.current_batch:
+            self.current_batch = self.batch_service.create_batch([])
+
+        added_count = 0
+        for file_path in file_paths:
+            # Avoid duplicates
+            if not any(f.file_path == file_path for f in self.current_batch.files):
+                file_info = self.current_batch.add_file(file_path)
+                self._add_file_to_list(file_info.filename, file_path)
+                added_count += 1
+
+        # Enable process button if files are selected
+        self.process_button.setEnabled(len(self.current_batch.files) > 0)
+
+        if added_count > 0:
+            ToastNotification.show_success(
+                self,
+                f"{added_count} arquivo(s) adicionado(s)",
+                2000
+            )
+            logger.info(f"Added {added_count} files via drag & drop")
+
     def _add_file_to_list(self, filename: str, file_path: str) -> None:
         """
         Add a file to the UI list.
@@ -259,6 +399,12 @@ class MainWindow(QMainWindow):
         self.process_button.setEnabled(len(self.current_batch.files) > 0)
 
         logger.debug(f"Removed {len(selected_items)} files")
+
+        ToastNotification.show_info(
+            self,
+            f"{len(selected_items)} arquivo(s) removido(s)",
+            2000
+        )
 
     def _start_processing(self) -> None:
         """Start processing the selected files."""
@@ -312,17 +458,26 @@ class MainWindow(QMainWindow):
         failed_count = summary["failed"]
 
         if success_count > 0:
+            ToastNotification.show_success(
+                self,
+                f"Upload concluído! {success_count} sucesso, {failed_count} falhas",
+                3000
+            )
+            # Keep the QMessageBox for batch ID info
             QMessageBox.information(
                 self,
                 "Upload Concluído",
-                f"Upload concluído!\n\nSucesso: {success_count}\nFalhas: {failed_count}\n\n"
-                f"Batch ID: {batch.batch_id}\n\n"
-                f"Verificando status automaticamente..."
+                f"Batch ID: {batch.batch_id}\n\nVerificando status automaticamente..."
             )
 
             # Start automatic polling
             self._start_polling()
         else:
+            ToastNotification.show_error(
+                self,
+                f"Todos os uploads falharam ({failed_count} falhas)",
+                4000
+            )
             QMessageBox.critical(
                 self,
                 "Erro no Upload",
@@ -346,6 +501,12 @@ class MainWindow(QMainWindow):
             self,
             "Erro no Upload",
             f"Falha ao enviar arquivos:\n\n{error_message}"
+        )
+
+        ToastNotification.show_error(
+            self,
+            "Upload falhou!",
+            3000
         )
 
         # Re-enable buttons
@@ -397,6 +558,12 @@ class MainWindow(QMainWindow):
 
         logger.info(f"Batch {batch.batch_id} completed: "
                    f"{summary['completed']} succeeded, {summary['failed']} failed")
+
+        ToastNotification.show_success(
+            self,
+            f"Processamento concluído! {summary['completed']} sucesso, {summary['failed']} falhas",
+            4000
+        )
 
         QMessageBox.information(
             self,
