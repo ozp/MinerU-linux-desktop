@@ -28,7 +28,7 @@ from ..workers.polling_worker import PollingWorker
 from ..models.batch import BatchInfo
 from ..config.constants import FILE_FILTERS, STATUS_TEXT, FileStatusLocal
 from ..config.config_manager import get_config
-from ..utils.logging_config import get_logger
+from ..utils.logging_config import get_logger, add_console_panel_handler
 from version import VERSION
 
 
@@ -159,8 +159,12 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
+        # Connect logging system to console panel
+        import logging
+        add_console_panel_handler(self.console_panel, logging.DEBUG)
+
         # Log initial message
-        self.console_panel.append_log("MinerU Desktop Client iniciado", LogLevel.INFO)
+        logger.info("MinerU Desktop Client iniciado")
 
     def _create_menu_bar(self) -> None:
         """Create the application menu bar."""

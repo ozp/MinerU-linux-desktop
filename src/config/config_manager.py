@@ -156,10 +156,15 @@ class ConfigManager:
         Save configuration to config file.
 
         Note: API token is saved separately via the api_token setter.
-        This method only saves non-sensitive settings to config.ini.
+        This method only saves non-sensitive settings to config.ini
+        and preserves other sections like [UI].
         """
         try:
             config = configparser.ConfigParser()
+
+            # Load existing config to preserve other sections (like [UI])
+            if os.path.exists(CONFIG_FILE):
+                config.read(CONFIG_FILE)
 
             # Save processing options
             config["Settings"] = {

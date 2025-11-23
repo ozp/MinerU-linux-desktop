@@ -10,7 +10,10 @@ import logging
 import logging.handlers
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..ui.console_panel import ConsolePanel
 
 
 def setup_logging(
@@ -87,3 +90,94 @@ def get_logger(name: str) -> logging.Logger:
         >>> logger.info("Application started")
     """
     return logging.getLogger(f"mineru.{name}")
+
+
+class ConsolePanelHandler(logging.Handler):
+    """
+    Custom logging handler that redirects logs to ConsolePanel widget.
+
+    This handler integrates the Python logging system with the UI console panel,
+    allowing all log messages to be displayed in the application interface.
+    """
+
+    # Mapping of Python logging levels to ConsolePanel LogLevel constants
+    LEVEL_MAP = {
+        logging.DEBUG: "Debug",
+        logging.INFO: "Info",
+        logging.WARNING: "Warning",
+        logging.ERROR: "Error",
+        logging.CRITICAL: "Error",
+    }
+
+    def __init__(self, console_panel: "ConsolePanel") -> None:
+        """
+        Initialize the console panel handler.
+
+        Args:
+            console_panel: Reference to the ConsolePanel widget
+        """
+        super().__init__()
+        self.console_panel = console_panel
+
+        # Set formatter with timestamp and level
+        formatter = logging.Formatter(
+            fmt="%(message)s",  # ConsolePanel adds its own timestamp and level
+            datefmt="%H:%M:%S"
+        )
+        self.setFormatter(formatter)
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """
+        Emit a log record to the console panel.
+
+        Args:
+            record: Log record to emit
+        """
+        try:
+            # Format the message
+            msg = self.format(record)
+
+            # Map logging level to ConsolePanel level
+            level = self.LEVEL_MAP.get(record.levelno, "Info")
+
+            # Send to console panel
+            if self.console_panel:
+                self.console_panel.append_log(msg, level)
+
+        except Exception:
+            # Avoid infinite recursion if logging the error fails
+            self.handleError(record)
+
+
+def add_console_panel_handler(console_panel: "ConsolePanel", level: int = logging.DEBUG) -> None:
+    """
+    Add a console panel handler to the main logger.
+
+    This function connects the logging system to the UI console panel,
+    allowing all log messages to be displayed in the application.
+
+    Args:
+        console_panel: Reference to the ConsolePanel widget
+        level: Minimum logging level to display in console (default: DEBUG)
+
+    Example:
+        >>> from ..ui.console_panel import ConsolePanel
+        >>> console = ConsolePanel()
+        >>> add_console_panel_handler(console, logging.DEBUG)
+    """
+    logger = logging.getLogger("mineru")
+
+    # Check if handler already exists
+    for handler in logger.handlers:
+        if isinstance(handler, ConsolePanelHandler):
+            # Update existing handler
+            handler.console_panel = console_panel
+            handler.setLevel(level)
+            return
+
+    # Create and add new handler
+    handler = ConsolePanelHandler(console_panel)
+    handler.setLevel(level)
+    logger.addHandler(handler)
+
+    logger.info("Console panel handler connected to logging system")
