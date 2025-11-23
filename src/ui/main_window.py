@@ -13,13 +13,15 @@ from pathlib import Path
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QHBoxLayout, QPushButton, QListWidget, QFileDialog,
-    QMessageBox, QGroupBox, QListWidgetItem, QProgressBar
+    QMessageBox, QGroupBox, QListWidgetItem, QProgressBar,
+    QSplitter
 )
 from PySide6.QtCore import Qt, QUrl, QTimer
 from PySide6.QtGui import QAction, QDesktopServices
 
 from .settings_dialog import SettingsDialog
 from .toast_notification import ToastNotification, ToastType
+from .console_panel import ConsolePanel, LogLevel
 from ..services.batch_service import BatchService
 from ..workers.upload_worker import UploadWorker
 from ..workers.polling_worker import PollingWorker
@@ -97,6 +99,9 @@ class MainWindow(QMainWindow):
         # Theme state
         self.current_theme = "light"
 
+        # Console panel reference
+        self.console_panel: Optional[ConsolePanel] = None
+
         self.setup_ui()
 
         # Apply theme from config
@@ -113,23 +118,49 @@ class MainWindow(QMainWindow):
         # Create menu bar
         self._create_menu_bar()
 
-        # Create central widget
+        # Create central widget with splitter for resizable console
         central_widget = QWidget()
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create splitter for main content and console
+        splitter = QSplitter(Qt.Vertical)
+
+        # Top section (main content)
+        top_widget = QWidget()
+        top_layout = QVBoxLayout()
+        top_layout.setContentsMargins(8, 8, 8, 8)
 
         # File selection section
-        main_layout.addWidget(self._create_file_section())
+        top_layout.addWidget(self._create_file_section())
 
         # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
-        main_layout.addWidget(self.progress_bar)
+        top_layout.addWidget(self.progress_bar)
 
         # Processing section
-        main_layout.addWidget(self._create_processing_section())
+        top_layout.addWidget(self._create_processing_section())
 
+        top_widget.setLayout(top_layout)
+        splitter.addWidget(top_widget)
+
+        # Console panel
+        self.console_panel = ConsolePanel()
+        self.console_panel.setMinimumHeight(100)
+        splitter.addWidget(self.console_panel)
+
+        # Set initial splitter sizes (70% top, 30% console)
+        splitter.setSizes([500, 200])
+        splitter.setCollapsible(0, False)  # Don't allow collapsing main content
+        splitter.setCollapsible(1, True)   # Allow collapsing console
+
+        main_layout.addWidget(splitter)
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
+
+        # Log initial message
+        self.console_panel.append_log("MinerU Desktop Client iniciado", LogLevel.INFO)
 
     def _create_menu_bar(self) -> None:
         """Create the application menu bar."""
@@ -158,6 +189,14 @@ class MainWindow(QMainWindow):
         self.theme_action = QAction("🌙 Tema Escuro", self)
         self.theme_action.triggered.connect(self.toggle_theme)
         view_menu.addAction(self.theme_action)
+
+        # Console toggle action
+        view_menu.addSeparator()
+        self.console_action = QAction("📋 Mostrar Console", self)
+        self.console_action.setCheckable(True)
+        self.console_action.setChecked(True)
+        self.console_action.triggered.connect(self._toggle_console_visibility)
+        view_menu.addAction(self.console_action)
 
         # Help menu
         help_menu = menubar.addMenu("&Ajuda")
@@ -285,10 +324,25 @@ class MainWindow(QMainWindow):
 
             logger.info(f"Applied {theme} theme")
 
+            # Log theme change in console
+            if self.console_panel:
+                self.console_panel.append_log(f"Tema alterado para: {theme}", LogLevel.INFO)
+
         except Exception as e:
             logger.error(f"Failed to load theme '{theme}': {e}")
             # Fallback to default
             self.setStyleSheet("")
+
+    def _toggle_console_visibility(self, checked: bool) -> None:
+        """
+        Toggle console panel visibility.
+
+        Args:
+            checked: True to show console, False to hide
+        """
+        if self.console_panel:
+            self.console_panel.setVisible(checked)
+            logger.debug(f"Console visibility: {checked}")
 
     def _show_about(self) -> None:
         """Show the about dialog with version information."""
@@ -330,6 +384,13 @@ class MainWindow(QMainWindow):
             self.process_button.setEnabled(len(self.current_batch.files) > 0)
 
             logger.info(f"Added {len(files)} files to batch")
+
+            # Log to console
+            if self.console_panel:
+                self.console_panel.append_log(
+                    f"Adicionados {len(files)} arquivo(s) ao lote",
+                    LogLevel.INFO
+                )
 
     def add_files_from_paths(self, file_paths: list) -> None:
         """
@@ -418,6 +479,13 @@ class MainWindow(QMainWindow):
 
         logger.info(f"Starting processing of {len(self.current_batch.files)} files")
 
+        # Log to console
+        if self.console_panel:
+            self.console_panel.append_log(
+                f"Iniciando processamento de {len(self.current_batch.files)} arquivo(s)",
+                LogLevel.INFO
+            )
+
         # Disable buttons during processing
         self.process_button.setEnabled(False)
         self.add_files_button.setEnabled(False)
@@ -448,6 +516,13 @@ class MainWindow(QMainWindow):
             batch: BatchInfo with upload results
         """
         logger.info(f"Upload completed for batch {batch.batch_id}")
+
+        # Log to console
+        if self.console_panel:
+            self.console_panel.append_log(
+                f"Upload concluído para lote {batch.batch_id}",
+                LogLevel.INFO
+            )
 
         # Update UI with upload results
         self._update_ui_from_batch()
@@ -496,6 +571,13 @@ class MainWindow(QMainWindow):
             error_message: Error description
         """
         logger.error(f"Upload failed: {error_message}")
+
+        # Log to console
+        if self.console_panel:
+            self.console_panel.append_log(
+                f"Falha no upload: {error_message}",
+                LogLevel.ERROR
+            )
 
         QMessageBox.critical(
             self,
@@ -558,6 +640,13 @@ class MainWindow(QMainWindow):
 
         logger.info(f"Batch {batch.batch_id} completed: "
                    f"{summary['completed']} succeeded, {summary['failed']} failed")
+
+        # Log to console
+        if self.console_panel:
+            self.console_panel.append_log(
+                f"Lote {batch.batch_id} concluído: {summary['completed']} sucesso, {summary['failed']} falhas",
+                LogLevel.INFO
+            )
 
         ToastNotification.show_success(
             self,
