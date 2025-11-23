@@ -3,6 +3,7 @@
 /* Main Window */
 QMainWindow {
     background-color: #f5f5f5;
+    color: #2c3e50;
 }
 
 /* Group Boxes */
@@ -71,6 +72,7 @@ QListWidget {
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     padding: 4px;
+    color: #2c3e50;
     selection-background-color: #3498db;
     selection-color: white;
 }
@@ -97,6 +99,7 @@ QProgressBar {
     background-color: #ecf0f1;
     text-align: center;
     height: 24px;
+    color: #2c3e50;
 }
 
 QProgressBar::chunk {
@@ -108,11 +111,13 @@ QProgressBar::chunk {
 QMenuBar {
     background-color: #ffffff;
     border-bottom: 1px solid #e0e0e0;
+    color: #2c3e50;
 }
 
 QMenuBar::item {
     padding: 6px 12px;
     background-color: transparent;
+    color: #2c3e50;
 }
 
 QMenuBar::item:selected {
@@ -123,6 +128,7 @@ QMenu {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
+    color: #2c3e50;
 }
 
 QMenu::item {
@@ -140,6 +146,7 @@ QLineEdit {
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     padding: 8px;
+    color: #2c3e50;
     selection-background-color: #3498db;
 }
 
@@ -154,6 +161,7 @@ QComboBox {
     border-radius: 6px;
     padding: 6px;
     min-height: 28px;
+    color: #2c3e50;
 }
 
 QComboBox:hover {
@@ -168,11 +176,13 @@ QComboBox QAbstractItemView {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     selection-background-color: #3498db;
+    color: #2c3e50;
 }
 
 /* CheckBox */
 QCheckBox {
     spacing: 8px;
+    color: #2c3e50;
 }
 
 QCheckBox::indicator {
@@ -196,6 +206,7 @@ QCheckBox::indicator:checked {
 /* Dialogs */
 QDialog {
     background-color: #f5f5f5;
+    color: #2c3e50;
 }
 
 /* Scroll Bars */
