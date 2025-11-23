@@ -255,3 +255,80 @@ QLabel#toastError {
 QLabel#toastWarning {
     background-color: rgba(243, 156, 18, 0.9);
 }
+
+/* Console Panel */
+ConsolePanel {
+    background-color: #f5f5f5;
+    border-top: 1px solid #e0e0e0;
+}
+
+QLabel#consolePanelTitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 4px 8px;
+}
+
+QPlainTextEdit#consoleTextEdit {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 8px;
+    color: #2c3e50;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    selection-background-color: #3498db;
+    selection-color: white;
+}
+
+QPushButton#consoleButton {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: 28px;
+}
+
+QPushButton#consoleButton:hover {
+    background-color: #7f8c8d;
+}
+
+QPushButton#consoleButton:pressed {
+    background-color: #6c7a7b;
+}
+
+QComboBox#consoleLevelFilter {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 4px 8px;
+    min-height: 24px;
+    min-width: 100px;
+    color: #2c3e50;
+    font-size: 12px;
+}
+
+QComboBox#consoleLevelFilter:hover {
+    border: 1px solid #3498db;
+}
+
+QComboBox#consoleLevelFilter::drop-down {
+    border: none;
+    padding-right: 8px;
+}
+
+QComboBox#consoleLevelFilter QAbstractItemView {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    selection-background-color: #3498db;
+    color: #2c3e50;
+    font-size: 12px;
+}
+
+QLabel#consoleStatus {
+    color: #7f8c8d;
+    font-size: 11px;
+    padding: 2px 8px;
+}
