@@ -542,12 +542,17 @@ class MainWindow(QMainWindow):
                 f"Upload concluído! {success_count} sucesso, {failed_count} falhas",
                 3000
             )
-            # Keep the QMessageBox for batch ID info
-            QMessageBox.information(
-                self,
-                "Upload Concluído",
-                f"Batch ID: {batch.batch_id}\n\nVerificando status automaticamente..."
-            )
+
+            # Log detailed info to console instead of QMessageBox
+            if self.console_panel:
+                self.console_panel.append_log(
+                    f"Batch ID: {batch.batch_id}",
+                    LogLevel.INFO
+                )
+                self.console_panel.append_log(
+                    "Verificando status automaticamente...",
+                    LogLevel.INFO
+                )
 
             # Start automatic polling
             self._start_polling()
@@ -658,12 +663,28 @@ class MainWindow(QMainWindow):
             4000
         )
 
-        QMessageBox.information(
-            self,
-            "Processamento Concluído",
-            "Todos os arquivos foram processados!\n\n"
-            "Clique em 'Abrir Pasta de Saída' para ver os resultados."
-        )
+        # Log detailed completion info to console instead of QMessageBox
+        if self.console_panel:
+            self.console_panel.append_log(
+                "=" * 60,
+                LogLevel.INFO
+            )
+            self.console_panel.append_log(
+                "✓ Todos os arquivos foram processados!",
+                LogLevel.INFO
+            )
+            self.console_panel.append_log(
+                f"  Sucesso: {summary['completed']} | Falhas: {summary['failed']}",
+                LogLevel.INFO
+            )
+            self.console_panel.append_log(
+                "  Clique em 'Abrir Pasta de Saída' para ver os resultados.",
+                LogLevel.INFO
+            )
+            self.console_panel.append_log(
+                "=" * 60,
+                LogLevel.INFO
+            )
 
     def _on_polling_error(self, error_message: str) -> None:
         """
