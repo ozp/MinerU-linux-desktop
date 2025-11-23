@@ -79,14 +79,14 @@ UI_TEXT = {
     "processing": "Processing",
 }
 
-# Status Display Text (Portuguese)
+# Status Display Text (Portuguese) with Icons
 STATUS_TEXT = {
-    FileStatusLocal.READY: "Pronto",
-    FileStatusLocal.UPLOADING: "Enviando",
-    FileStatusLocal.PROCESSING: "Processando no servidor...",
-    FileStatusLocal.COMPLETED: "Concluído",
-    FileStatusLocal.FAILED: "Falhou",
-    FileStatusLocal.DOWNLOAD_FAILED: "Erro no Download",
+    FileStatusLocal.READY: "📄 Pronto",
+    FileStatusLocal.UPLOADING: "⬆️ Enviando",
+    FileStatusLocal.PROCESSING: "⚙️ Processando no servidor...",
+    FileStatusLocal.COMPLETED: "✅ Concluído",
+    FileStatusLocal.FAILED: "❌ Falhou",
+    FileStatusLocal.DOWNLOAD_FAILED: "⚠️ Erro no Download",
 }
 
 # File Type Filters
