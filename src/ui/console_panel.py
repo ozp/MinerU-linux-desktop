@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QPlainTextEdit, QComboBox, QFileDialog, QLabel
 )
 from PySide6.QtCore import Qt, Signal, QTimer
-from PySide6.QtGui import QTextCursor
+from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor
 
 from ..utils.logging_config import get_logger
 
@@ -28,6 +28,14 @@ class LogLevel:
     INFO = "Info"
     WARNING = "Warning"
     ERROR = "Error"
+
+    # Color mapping for each log level (works in both light and dark themes)
+    COLORS = {
+        "Debug": QColor("#6C757D"),    # Gray
+        "Info": QColor("#0D6EFD"),     # Blue
+        "Warning": QColor("#FFC107"),  # Amber/Yellow
+        "Error": QColor("#DC3545"),    # Red
+    }
 
 
 class ConsolePanel(QWidget):
@@ -154,7 +162,7 @@ class ConsolePanel(QWidget):
 
         # Apply filter and update display
         if self._should_display_log(level):
-            self._append_to_display(formatted_message)
+            self._append_to_display(formatted_message, level)
 
         # Update status
         self._update_status()
@@ -175,14 +183,27 @@ class ConsolePanel(QWidget):
             return True
         return level == self._current_filter
 
-    def _append_to_display(self, formatted_message: str) -> None:
+    def _append_to_display(self, formatted_message: str, level: str = LogLevel.INFO) -> None:
         """
-        Append formatted message to the display.
+        Append formatted message to the display with color.
 
         Args:
             formatted_message: Formatted log message
+            level: Log level for color selection
         """
-        self.console_text.appendPlainText(formatted_message)
+        # Get color for this log level
+        color = LogLevel.COLORS.get(level, QColor("#000000"))
+
+        # Use text cursor to add colored text
+        cursor = self.console_text.textCursor()
+        cursor.movePosition(QTextCursor.End)
+
+        # Create text format with color
+        text_format = QTextCharFormat()
+        text_format.setForeground(color)
+
+        # Insert text with format
+        cursor.insertText(formatted_message + "\n", text_format)
 
         # Auto-scroll to bottom
         if self._auto_scroll:
@@ -207,8 +228,13 @@ class ConsolePanel(QWidget):
 
         for log_entry in self._log_buffer:
             if self._should_display_log(log_entry["level"]):
-                # Don't use append_to_display to avoid scrolling on each line
-                self.console_text.appendPlainText(log_entry["message"])
+                # Use cursor to add colored text without individual scrolling
+                color = LogLevel.COLORS.get(log_entry["level"], QColor("#000000"))
+                cursor = self.console_text.textCursor()
+                cursor.movePosition(QTextCursor.End)
+                text_format = QTextCharFormat()
+                text_format.setForeground(color)
+                cursor.insertText(log_entry["message"] + "\n", text_format)
 
         # Scroll to bottom after all messages added
         if self._auto_scroll:
