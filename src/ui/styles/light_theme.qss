@@ -332,3 +332,53 @@ QLabel#consoleStatus {
     font-size: 11px;
     padding: 2px 8px;
 }
+
+/* Tab Widget */
+QTabWidget {
+    background-color: #f5f5f5;
+}
+
+QTabWidget::pane {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 8px 16px;
+    margin-right: 2px;
+    min-width: 100px;
+}
+
+QTabBar::tab:selected {
+    background-color: #ffffff;
+    color: #3498db;
+    font-weight: bold;
+    border-bottom: 2px solid #3498db;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #dfe6e9;
+}
+
+/* Text Edit (for Help Dialog) */
+QTextEdit {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    color: #2c3e50;
+    selection-background-color: #3498db;
+    selection-color: white;
+}
+
+QTextEdit:focus {
+    border: 2px solid #3498db;
+}
