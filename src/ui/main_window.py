@@ -20,6 +20,7 @@ from PySide6.QtCore import Qt, QUrl, QTimer
 from PySide6.QtGui import QAction, QDesktopServices
 
 from .settings_dialog import SettingsDialog
+from .help_dialog import HelpDialog
 from .toast_notification import ToastNotification, ToastType
 from .console_panel import ConsolePanel, LogLevel
 from ..services.batch_service import BatchService
@@ -205,7 +206,14 @@ class MainWindow(QMainWindow):
         # Help menu
         help_menu = menubar.addMenu("&Ajuda")
 
+        # User Manual action
+        manual_action = QAction("📖 &Manual do Usuário", self)
+        manual_action.setShortcut("F1")
+        manual_action.triggered.connect(self._show_help)
+        help_menu.addAction(manual_action)
+
         # About action
+        help_menu.addSeparator()
         about_action = QAction("&Sobre", self)
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
@@ -347,6 +355,12 @@ class MainWindow(QMainWindow):
         if self.console_panel:
             self.console_panel.setVisible(checked)
             logger.debug(f"Console visibility: {checked}")
+
+    def _show_help(self) -> None:
+        """Show the help dialog with user manual."""
+        logger.debug("Opening help dialog")
+        dialog = HelpDialog(self)
+        dialog.exec()
 
     def _show_about(self) -> None:
         """Show the about dialog with version information."""
