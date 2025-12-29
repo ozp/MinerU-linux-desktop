@@ -22,33 +22,32 @@ Este projeto fornece uma interface desktop amigável para o MinerU, permitindo o
 - ✅ Suporte otimizado para português com modelo Pipeline
 - ✅ Extração automática de arquivos ZIP após download
 
-## Download Rápido (AppImage)
+## Início Rápido
 
-**Quer começar rapidamente?** Baixe o AppImage pronto para uso:
-
-### 📥 [Download MinerU-x86_64.AppImage](https://github.com/ozp/MinerU-linux-desktop/releases/latest) (~72 MB)
-
-> **Nota sobre Versionamento**: A partir da versão 1.0.0, os AppImages são versionados (ex: `MinerU-1.0.0-x86_64.AppImage`). O link `MinerU-x86_64.AppImage` é um symlink que sempre aponta para a versão mais recente.
-
-**Como usar:**
+Para começar a usar o MinerU Desktop, você precisa construir o AppImage localmente:
 
 ```bash
-# 1. Instale as bibliotecas Qt do sistema (apenas uma vez)
+# 1. Clone o repositório
+git clone https://github.com/ozp/MinerU-linux-desktop.git
+cd MinerU-linux-desktop
+
+# 2. Instale as bibliotecas Qt do sistema (apenas uma vez)
 ./install_system_deps.sh
 
-# 2. Baixe o arquivo MinerU-x86_64.AppImage (ou versão específica)
-# 3. Torne-o executável
-chmod +x MinerU-x86_64.AppImage
+# 3. Construa o AppImage
+./build_appimage.sh
 
 # 4. Execute
 ./MinerU-x86_64.AppImage
 ```
 
-O AppImage é um executável portátil que funciona em **qualquer distribuição Linux**. Inclui Python e todas as dependências Python, mas requer bibliotecas Qt do sistema (instaladas pelo script acima).
+O processo de build cria um AppImage portátil (~70 MB) que funciona em **qualquer distribuição Linux**. O AppImage inclui Python e todas as dependências Python.
+
+> **Dica**: Para instruções detalhadas de build, consulte [BUILD.md](BUILD.md).
 
 ### Verificando a Versão
 
-Para verificar a versão do aplicativo instalado:
+Para verificar a versão do aplicativo:
 - Abra o aplicativo e vá em **Ajuda > Sobre** no menu
 - A versão também é exibida no título da janela
 
@@ -281,11 +280,11 @@ MinerU-linux-desktop/
 - **requests**: Cliente HTTP para chamadas de API
 - **keyring**: Armazenamento seguro de credenciais
 
-### Sistema de Release Automatizado
+### Versionamento e Releases
 
-Este projeto utiliza um sistema de release automatizado que garante consistência entre versões, README e AppImage.
+O projeto utiliza um sistema de versionamento que garante consistência entre versões e changelog.
 
-#### Como Fazer uma Release
+#### Criando uma Nova Versão
 
 ```bash
 # Correção de bugs (1.0.0 → 1.0.1)
@@ -300,10 +299,8 @@ Este projeto utiliza um sistema de release automatizado que garante consistênci
 
 O script `release.sh` automaticamente:
 - ✅ Atualiza a versão em `version.py`
-- ✅ Reconstrói o AppImage com a nova versão
 - ✅ Atualiza o CHANGELOG.md
 - ✅ Cria commit e tag Git
-- ✅ Garante consistência em todos os arquivos
 
 Para mais detalhes, consulte **[RELEASE_PROCESS.md](RELEASE_PROCESS.md)**.
 

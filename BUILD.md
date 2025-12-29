@@ -2,37 +2,17 @@
 
 Este documento descreve como construir o MinerU Desktop Client a partir do código fonte.
 
-## Download Direto (Recomendado)
+## Requisitos do Sistema
 
-Se você quer apenas usar o aplicativo, baixe o AppImage pronto:
-
-**[Download MinerU-x86_64.AppImage](MinerU-x86_64.AppImage)** (10 MB)
-
-### Requisitos do Sistema
-
-Antes de executar o AppImage, instale as bibliotecas Qt necessárias:
+Antes de construir e executar o AppImage, instale as bibliotecas Qt necessárias:
 
 ```bash
-# Opção 1: Script automático
+# Opção 1: Script automático (recomendado)
 ./install_system_deps.sh
 
 # Opção 2: Instalação manual
 apt-get install -y libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 \
     libxcb-shape0 libxcb-xkb1 libxkbcommon-x11-0 libegl1
-```
-
-**Nota**: O AppImage inclui o Python runtime e todas as dependências Python (PySide6, requests, keyring), mas ainda requer bibliotecas Qt do sistema para funcionar corretamente.
-
-### Como usar o AppImage:
-
-```bash
-# 1. Instale as dependências do sistema (veja acima)
-# 2. Baixe o arquivo
-# 3. Torne-o executável
-chmod +x MinerU-x86_64.AppImage
-
-# 4. Execute
-./MinerU-x86_64.AppImage
 ```
 
 Para mais detalhes sobre as dependências do sistema, consulte [SYSTEM_DEPENDENCIES.md](SYSTEM_DEPENDENCIES.md).
