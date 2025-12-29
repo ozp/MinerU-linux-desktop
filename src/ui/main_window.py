@@ -97,16 +97,16 @@ class MainWindow(QMainWindow):
         self.upload_worker: Optional[UploadWorker] = None
         self.polling_worker: Optional[PollingWorker] = None
 
-        # Theme state
-        self.current_theme = "light"
+        # Theme state - load preference before UI setup for correct menu text
+        saved_theme = self.config.get_theme_preference() if hasattr(self.config, 'get_theme_preference') else "light"
+        self.current_theme = saved_theme
 
         # Console panel reference
         self.console_panel: Optional[ConsolePanel] = None
 
         self.setup_ui()
 
-        # Apply theme from config
-        saved_theme = self.config.get_theme_preference() if hasattr(self.config, 'get_theme_preference') else "light"
+        # Apply theme stylesheet
         self.apply_theme(saved_theme)
 
         logger.info("Main window initialized")
@@ -190,8 +190,9 @@ class MainWindow(QMainWindow):
         # View menu
         view_menu = menubar.addMenu("&Visualizar")
 
-        # Theme toggle action
-        self.theme_action = QAction("🌙 Tema Escuro", self)
+        # Theme toggle action - text shows what clicking will switch to
+        theme_text = "🌙 Tema Escuro" if self.current_theme == "light" else "☀️ Tema Claro"
+        self.theme_action = QAction(theme_text, self)
         self.theme_action.triggered.connect(self.toggle_theme)
         view_menu.addAction(self.theme_action)
 
