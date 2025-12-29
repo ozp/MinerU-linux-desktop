@@ -58,7 +58,7 @@ a = Analysis(
         # Exclude problematic modules that aren't needed
         'test',
         'tests',
-        'distutils',
+        # Note: distutils removed - setuptools provides shim in Python 3.12+
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
